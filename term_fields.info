@@ -1,0 +1,7 @@
+; $Id$
+
+name = Term Fields
+description = Allows adminitrators to define fields for taxonomy terms in the same way that CCK allows administrators to define fields for nodes.
+core = 6.x
+version = "6.x-1.0"
+dependencies[] = taxonomy
