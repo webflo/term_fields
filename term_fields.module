@@ -237,10 +237,12 @@ function term_fields_taxonomy($op, $type, $form_values) {
 			switch ($op) {
 				case 'delete':
 					$fids = term_fields_get_fids($vid);
-					foreach ($fids as $fid) {
-						db_query('ALTER TABLE {term_fields_term} DROP %s', $fid);
+					if (!empty($fids)) {
+						foreach ($fids as $fid) {
+							db_query('ALTER TABLE {term_fields_term} DROP %s', $fid);
+						}
+						db_query('DELETE FROM {term_fields} WHERE vid = %d', $vid);
 					}
-					db_query('DELETE FROM {term_fields} WHERE vid = %d', $vid);
 			}
 	}
 }
