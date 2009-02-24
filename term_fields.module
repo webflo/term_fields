@@ -218,8 +218,8 @@ function term_fields_taxonomy($op, $type, $form_values) {
 						// see if theres a record for this term already.
 						// if so, update it. if not, insert a new record
 						$sql = 'SELECT tid FROM {term_fields_term} WHERE tid = %d';
-						db_query($sql, $tid);
-						if (db_affected_rows()) {
+						$result = db_query($sql, $tid);
+						if (term_fields_result_count($result)) {
 							// update the existing record
 							term_fields_term_update_record($tid, $values);
 						}
@@ -470,4 +470,16 @@ function term_fields_format_date($date) {
   else {
   	return '';
   }
+}
+
+/**
+ * Helper function to determine if a query result is empty or not.
+ */
+function term_fields_result_count($result) {
+	$count = 0;
+	while ($data = db_fetch_object($result)) {
+		$count++;
+	}
+	
+	return $count;
 }

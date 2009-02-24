@@ -18,7 +18,7 @@ function term_fields_admin() {
   										LEFT JOIN {vocabulary} v ON tf.vid = v.vid
   										ORDER BY v.name, tf.title', variable_get('term_fields_per_page', 25));
   $image_path = drupal_get_path('module', 'term_fields') . '/images/doc-option-add.png';
-  if (db_affected_rows()) {
+  if (term_fields_result_count($result)) {
   	$existing_fields = array();
 		while ($data = db_fetch_object($result)) {
 			$existing_fields[$data->fid]['title'] = $data->title . ' <small>(' . $data->fid . ')</small>';
