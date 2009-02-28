@@ -473,13 +473,17 @@ function term_fields_format_date($date) {
 }
 
 /**
- * Helper function to determine if a query result is empty or not.
+ * Helper function to determine if there are any fields defined, and return them
+ * in an array usable by theme_table if so.
  */
-function term_fields_result_count($result) {
-	$count = 0;
+function term_fields_fetch_fields($result) {
+	$rows = array();
 	while ($data = db_fetch_object($result)) {
-		$count++;
+		$rows[$data->fid]['title'] = $data->title . ' <small>(' . $data->fid . ')</small>';
+		$rows[$data->fid]['vocab'] = $data->name;
+		$rows[$data->fid]['desc'] = $data->description;
+		$rows[$data->fid]['edit'] = l(t('Edit'), 'admin/content/taxonomy/term_fields/edit/' . $data->fid);
 	}
 	
-	return $count;
+	return !empty($rows) ? $rows : 0;
 }

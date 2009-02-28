@@ -17,18 +17,9 @@ function term_fields_admin() {
   										FROM {term_fields} tf
   										LEFT JOIN {vocabulary} v ON tf.vid = v.vid
   										ORDER BY v.name, tf.title', variable_get('term_fields_per_page', 25));
-  $image_path = drupal_get_path('module', 'term_fields') . '/images/doc-option-add.png';
-  if (term_fields_result_count($result)) {
-  	$existing_fields = array();
-		while ($data = db_fetch_object($result)) {
-			$existing_fields[$data->fid]['title'] = $data->title . ' <small>(' . $data->fid . ')</small>';
-			$existing_fields[$data->fid]['vocab'] = $data->name;
-			$existing_fields[$data->fid]['desc'] = $data->description;
-			$existing_fields[$data->fid]['edit'] = l(t('Edit'), 'admin/content/taxonomy/term_fields/edit/' . $data->fid);
-  	}
-
+  if ($fields = term_fields_fetch_fields($result)) {
   	$header = array('Field', 'Vocabulary', 'Description', 'Edit');
-  	$output .= theme('table', $header, $existing_fields, array('id' => 'term-fields-admin'));
+  	$output .= theme('table', $header, $fields, array('id' => 'term-fields-admin'));
   	$output .= theme('pager');
   	return $output;
   }
