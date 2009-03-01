@@ -173,7 +173,7 @@ function term_fields_taxonomy($op, $type, $form_values) {
 	// shortcuts
 	$tid = $form_values['tid'];
 	$vid = $form_values['vid'];
-	//print '<pre>' . print_r($form_values, TRUE) . '</pre>';
+	
 	switch($type) {
 		case 'term':
 			// get all fields IDs used by this vocabulary
@@ -209,6 +209,12 @@ function term_fields_taxonomy($op, $type, $form_values) {
 							$options = unserialize($options);
 					}
 				}
+				
+				// if there's no values to set then we need to get out of here
+				// the exception being if the term is being deleted
+				if ($op != 'delete' && count($values) == 0) {
+					break;
+				}
 	
 				switch ($op) {
 					case 'insert':
@@ -219,7 +225,7 @@ function term_fields_taxonomy($op, $type, $form_values) {
 						// if so, update it. if not, insert a new record
 						$sql = 'SELECT tid FROM {term_fields_term} WHERE tid = %d';
 						$result = db_query($sql, $tid);
-						if (term_fields_result_count($result)) {
+						if (term_fields_fetch_fields($result)) {
 							// update the existing record
 							term_fields_term_update_record($tid, $values);
 						}
@@ -377,6 +383,7 @@ function term_fields_term_create_record($tid, $values) {
  * Update an existing record in the term_fields_term table.
  */
 function term_fields_term_update_record($tid, $values) {
+	
 	// create a list of fields and their respective placeholders for db_query()
 	$placeholders = '';
 	foreach ($values as $fid => $value) {
@@ -486,4 +493,40 @@ function term_fields_fetch_fields($result) {
 	}
 	
 	return !empty($rows) ? $rows : 0;
+}
+
+/**
+ * Implementation of hook_token_values().
+ */
+function term_fields_token_values($type, $object = NULL, $options = array()) {
+  if ($type == 'taxonomy') {
+  	$term = $object;
+  	$tokens = array();
+		$fields = term_fields_get_rows();
+		foreach ($fields as $fid => $field) {
+			if ($field->type != 'textarea' && $field->type != 'date') {
+				$value = term_fields_get_field($term->tid, $fid);
+				$tokens['field-' . $fid] = check_plain($value);
+				$tokens['field-' . $fid . '-raw'] = $value;
+			}
+		}
+		return $tokens;
+  }
+}
+
+/**
+ * Implementation of hook_token_list().
+ */
+function term_fields_token_list($type = 'all') {
+	if ($type == 'taxonomy' || $type == 'all') {
+		$tokens = array();
+		$fields = term_fields_get_rows();
+		foreach ($fields as $fid => $field) {
+			if ($field->type != 'textarea' && $field->type != 'date') {
+				$tokens['term_fields']['field-' . $fid] = t($field->description);
+				$tokens['term_fields']['field-' . $fid . '-raw'] = t($field->description . ' - *RAW*');
+			}
+		}
+		return $tokens;
+	}
 }
