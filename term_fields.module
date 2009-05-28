@@ -530,3 +530,12 @@ function term_fields_token_list($type = 'all') {
 		return $tokens;
 	}
 }
+
+function term_fields_get_children($tid, $vid = 0, $key = 'tid') {
+  $children = taxonomy_get_children($tid, $vid, $key);
+  $result = array();
+  foreach ($children as $child) {
+    $result[] = term_fields_get_term($child->$key);
+  }
+  return $result;
+}

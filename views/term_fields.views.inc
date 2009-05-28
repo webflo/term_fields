@@ -25,6 +25,7 @@ function term_fields_views_data() {
 					$field_handler = 'term_fields_handler_field';
 					$argument_handler = 'views_handler_argument_string';
 					$filter_handler = 'views_handler_filter_string';
+					$sort_handler = 'views_handler_sort';
 				
 					$data['term_fields_term'][$fid] = array(
 						'field' => array(
@@ -35,6 +36,9 @@ function term_fields_views_data() {
 						),
 						'filter' => array(
 							'handler' => $filter_handler
+						),
+						'sort' => array(
+						  'handler' => $sort_handler
 						)
 					);
 					break;
@@ -55,6 +59,7 @@ function term_fields_views_data() {
 					$field_handler = 'term_fields_handler_field_numeric';
 					$argument_handler = 'views_handler_argument_numeric';
 					$filter_handler = 'views_handler_filter_numeric';
+					$sort_handler = 'views_handler_sort';
 				
 					$data['term_fields_term'][$fid] = array(
 						'field' => array(
@@ -65,6 +70,9 @@ function term_fields_views_data() {
 						),
 						'filter' => array(
 							'handler' => $filter_handler
+						),
+						'sort' => array(
+						  'handler' => $sort_handler
 						)
 					);
 					break;
@@ -72,6 +80,7 @@ function term_fields_views_data() {
 					$field_handler = 'term_fields_handler_field';
 					$argument_handler = 'views_handler_argument_string';
 					$filter_handler = 'views_handler_filter_string';
+					$sort_handler = 'views_handler_sort';
 				
 					$data['term_fields_term'][$fid] = array(
 						'field' => array(
@@ -82,15 +91,26 @@ function term_fields_views_data() {
 						),
 						'filter' => array(
 							'handler' => $filter_handler
+						),
+						'sort' => array(
+						  'handler' => $sort_handler
 						)
 					);
 					break;
 				case 'date':
 					$field_handler = 'term_fields_handler_field_date';
+					$filter_handler = 'views_handler_filter_date';
+					$sort_handler = 'views_handler_sort_date';
 				
 					$data['term_fields_term'][$fid] = array(
 						'field' => array(
 							'handler' => $field_handler
+						),
+						'filter' => array(
+						  'handler' => $filter_handler
+						),
+						'sort' => array(
+						  'handler' => $sort_handler
 						)
 					);
 			}
