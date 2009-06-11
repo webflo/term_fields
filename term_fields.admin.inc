@@ -18,7 +18,7 @@ function term_fields_admin() {
   										LEFT JOIN {vocabulary} v ON tf.vid = v.vid
   										ORDER BY v.name, tf.title', variable_get('term_fields_per_page', 25));
   if ($fields = term_fields_fetch_fields($result)) {
-  	$header = array('Field', 'Vocabulary', 'Description', 'Edit');
+  	$header = array('Field', 'Vocabulary', 'Description');
   	$output .= theme('table', $header, $fields, array('id' => 'term-fields-admin'));
   	$output .= theme('pager');
   	return $output;
@@ -75,7 +75,8 @@ function term_fields_admin_new() {
 				'textarea' => t('Multi-row textarea'),
 				'numeric' => t('Numeric'),
 				'select' => t('Select box'),
-				'date' => t('Date')
+				'date' => t('Date'),
+				'file' => t('File')
 			),
 			'#description' => t('Define what type of field to use. Single line textboxes should
 													be used for fields such as names and dates, while multi line textareas
@@ -136,6 +137,7 @@ function term_fields_admin_new_submit($form, &$form_state) {
 			$data_type = 'LONGTEXT';
 			break;
 		case 'numeric':
+		case 'file':
 			$data_type = 'INT';
 			break;
 		case 'date':
@@ -182,23 +184,17 @@ function term_fields_admin_settings() {
 	foreach ($formats as $format) {
 		$options[$format] = format_date(time(), 'custom', $format);
 	}
-	$form['date_settings'] = array(
-		'#type' => 'fieldset',
-		'#title' => 'Date Settings',
-		'#collapsible' => TRUE,
-		//'#collapsed' => TRUE
-	);
-	$form['date_settings']['date_format'] = array(
+	$form['date_format'] = array(
 		'#type' => 'select',
 		'#title' => t('Date Field Format'),
 		'#description' => t('The format to be used when displaying date fields.'),
-		'#default_value' => variable_get('term_fields_date_format', '') ? variable_get('term_fields_date_format', '') : '',
+		'#default_value' => variable_get('term_fields_date_format', ''),
 		'#options' => $options
 	);
-	$form['date_settings']['custom'] = array(
+	$form['custom'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Custom Date Format'),
-		'#default_value' => variable_get('term_fields_date_format_custom', '') ? variable_get('term_fields_date_format_custom', '') : '',
+		'#default_value' => variable_get('term_fields_date_format_custom', ''),
 		'#description' => t('A user-defined date format. If set, it will be used instead of what is set in the Date Field Format field. Leave blank to disable. See the <a href="@url">PHP manual</a> for available options.', array('@url' => 'http://php.net/manual/function.date.php')),
 		'#size' => 5
 	);
@@ -206,7 +202,7 @@ function term_fields_admin_settings() {
 		'#type' => 'textfield',
 		'#title' => t('Fields Per Page'),
 		'#description' => t('How many fields to show per page on the fields administration page.'),
-		'#default_value' => variable_get('term_fields_per_page', 25),
+		'#default_value' => variable_get('term_fields_per_page', 15),
 		'#size' => 3
 	);
 	$form['submit'] = array(
@@ -262,6 +258,25 @@ function term_fields_admin_edit($form_state, $fid) {
 			'#default_value' => $field->options ? implode("\n", unserialize($field->options)) : ''
 		);
 	}
+	elseif ($field->type == 'file') {
+	  $options = unserialize($field->options);
+	  $form['file_max_size'] = array(
+	    '#type' => 'textfield',
+	    '#title' => t('Maximum file size'),
+	    '#description' => t('Maximum size of the file in megabytes. Default is 1 MB.'),
+	    '#default_value' => isset($options['file_max_size']) ? $options['file_max_size'] : 1,
+	    '#size' => 1,
+	    '#required' => TRUE
+	  );
+	  $form['file_allowed_exts'] = array(
+	    '#type' => 'textfield',
+	    '#title' => t('Allowed extensions'),
+	    '#description' => t('Specify the allowed file extensions for this field. Separate extensions by spaces, do not include leading dot.'),
+	    '#default_value' => isset($options['file_allowed_exts']) ? implode(' ', $options['file_allowed_exts']) : 'txt',
+	    '#size' => 60,
+	    '#required' => TRUE
+	  );
+	}
 	$form['weight'] = array(
 		'#type' => 'weight',
 		'#title' => t('Weight'),
@@ -298,16 +313,26 @@ function term_fields_admin_edit_submit($form, &$form_state) {
 	else {
 		$sql = "SELECT type FROM {term_fields} WHERE fid = '%s'";
 		$type = db_result(db_query($sql, $values['fid']));
-		if ($type != 'select') {
-			$sql = "UPDATE {term_fields} SET title = '%s', description = '%s', weight = %d WHERE fid = '%s'";
-			db_query($sql, $values['title'], $values['description'], $values['weight'], $values['fid']);
-		}
-		else {
-			$options = explode("\r\n", $values['options']);
-			$options = drupal_map_assoc($options);
-			$options = serialize($options);
-			$sql = "UPDATE {term_fields} SET title = '%s', description = '%s', weight = %d, options = '%s' WHERE fid = '%s'";
-			db_query($sql, $values['title'], $values['description'], $values['weight'], $options, $values['fid']);
+		switch ($type) {
+		  case 'select':
+		    $options = explode("\r\n", $values['options']);
+			  $options = drupal_map_assoc($options);
+			  $options = serialize($options);
+			  $sql = "UPDATE {term_fields} SET title = '%s', description = '%s', weight = %d, options = '%s' WHERE fid = '%s'";
+			  db_query($sql, $values['title'], $values['description'], $values['weight'], $options, $values['fid']);
+		    break;
+		  case 'file':
+		    $options = array();
+		    $options['file_max_size'] = $values['file_max_size'];
+		    $options['file_allowed_exts'] = explode(' ', $values['file_allowed_exts']);
+		    $options = serialize($options);
+		    $sql = "UPDATE {term_fields} SET title = '%s', description = '%s', weight = %d, options = '%s' WHERE fid = '%s'";
+			  db_query($sql, $values['title'], $values['description'], $values['weight'], $options, $values['fid']);
+		    break;
+		  default:
+		    $sql = "UPDATE {term_fields} SET title = '%s', description = '%s', weight = %d WHERE fid = '%s'";
+			  db_query($sql, $values['title'], $values['description'], $values['weight'], $values['fid']);
+		    break;
 		}
 	
 		drupal_set_message(t('Field <i>' . $values['fid'] . '</i> was successfully updated.'));

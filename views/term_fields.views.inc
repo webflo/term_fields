@@ -22,97 +22,82 @@ function term_fields_views_data() {
 			// some fields need a special handler to add things like 'Link to this term' functionality
 			switch ($record->type) {
 				case 'textfield':
-					$field_handler = 'term_fields_handler_field';
-					$argument_handler = 'views_handler_argument_string';
-					$filter_handler = 'views_handler_filter_string';
-					$sort_handler = 'views_handler_sort';
-				
 					$data['term_fields_term'][$fid] = array(
 						'field' => array(
-					 	'handler' => $field_handler
+					 	  'handler' => 'term_fields_handler_field'
 						),
 						'argument' => array(
-							'handler' => $argument_handler
+							'handler' => 'views_handler_argument_string'
 						),
 						'filter' => array(
-							'handler' => $filter_handler
+							'handler' => 'views_handler_filter_string'
 						),
 						'sort' => array(
-						  'handler' => $sort_handler
+						  'handler' => 'views_handler_sort'
 						)
 					);
 					break;
 				case 'textarea':
-					$field_handler = 'term_fields_handler_field_textarea';
-					$filter_handler = 'views_handler_filter_string';
-				
 					$data['term_fields_term'][$fid] = array(
 						'field' => array(
-					 	'handler' => $field_handler
+					 	  'handler' => 'term_fields_handler_field_textarea'
 						),
 						'filter' => array(
-							'handler' => $filter_handler
+							'handler' => 'views_handler_filter_string'
 						)
 					);
 					break;
 				case 'numeric':
-					$field_handler = 'term_fields_handler_field_numeric';
-					$argument_handler = 'views_handler_argument_numeric';
-					$filter_handler = 'views_handler_filter_numeric';
-					$sort_handler = 'views_handler_sort';
-				
 					$data['term_fields_term'][$fid] = array(
 						'field' => array(
-							'handler' => $field_handler
+							'handler' => 'term_fields_handler_field_numeric'
 						),
 						'argument' => array(
-							'handler' => $argument_handler
+							'handler' => 'views_handler_argument_numeric'
 						),
 						'filter' => array(
-							'handler' => $filter_handler
+							'handler' => 'views_handler_filter_numeric'
 						),
 						'sort' => array(
-						  'handler' => $sort_handler
+						  'handler' => 'views_handler_sort'
 						)
 					);
 					break;
 				case 'select':
-					$field_handler = 'term_fields_handler_field';
-					$argument_handler = 'views_handler_argument_string';
-					$filter_handler = 'views_handler_filter_string';
-					$sort_handler = 'views_handler_sort';
-				
 					$data['term_fields_term'][$fid] = array(
 						'field' => array(
-					 	'handler' => $field_handler
+					 	  'handler' => 'term_fields_handler_field'
 						),
 						'argument' => array(
-							'handler' => $argument_handler
+							'handler' => 'views_handler_argument_string'
 						),
 						'filter' => array(
-							'handler' => $filter_handler
+							'handler' => 'views_handler_filter_string'
 						),
 						'sort' => array(
-						  'handler' => $sort_handler
+						  'handler' => 'views_handler_sort'
 						)
 					);
 					break;
 				case 'date':
-					$field_handler = 'term_fields_handler_field_date';
-					$filter_handler = 'views_handler_filter_date';
-					$sort_handler = 'views_handler_sort_date';
-				
 					$data['term_fields_term'][$fid] = array(
 						'field' => array(
-							'handler' => $field_handler
+							'handler' => 'term_fields_handler_field_date'
 						),
 						'filter' => array(
-						  'handler' => $filter_handler
+						  'handler' => 'views_handler_filter_date'
 						),
 						'sort' => array(
-						  'handler' => $sort_handler
+						  'handler' => 'views_handler_sort_date'
 						)
 					);
+					break;
+				case 'file':
+				  $data['term_fields_term'][$fid] = array(
+				    'field' => array(
+				      'handler' => 'views_handler_field'
+				    )
+				  );
 			}
 		
 			// all fields get this
@@ -134,7 +119,8 @@ function term_fields_views_handlers() {
 		),
 		'handlers' => array(
 			'term_fields_handler_field' => array(
-				'parent' => 'views_handler_field'),
+				'parent' => 'views_handler_field'
+			),
 			'term_fields_handler_field_textarea' => array(
 				'parent' => 'views_handler_field'
 			),
@@ -142,7 +128,8 @@ function term_fields_views_handlers() {
 				'parent' => 'views_handler_field_numeric'
 			),
 			'term_fields_handler_field_date' => array(
-				'parent' => 'views_handler_field_date'),
+				'parent' => 'views_handler_field_date'
 			)
-		);
+		)
+	);
 }

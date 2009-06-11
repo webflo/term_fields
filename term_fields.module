@@ -107,8 +107,7 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
 								'#type' => $attribute['type'],
 								'#size' => 30,
 								'#max_length' => 100,
-								'#default_value' => $value ? $value : NULL,
-								'#description' => $attribute['description']
+								'#default_value' => $value ? $value : NULL
 							);
 							break;
 						case 'textarea':
@@ -116,16 +115,14 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
 								'#type' => $attribute['type'],
 								'#rows' => 5,
 								'#cols' => 60,
-								'#default_value' => $value ? $value : NULL,
-								'#description' => $attribute['description']
+								'#default_value' => $value ? $value : NULL
 							);
 							break;
 						case 'numeric':
 							$form['fields'][$fid] = array(
 								'#type' => 'textfield',
 								'#size' => 2,
-								'#default_value' => $value ? $value : NULL,
-								'#description' => $attribute['description']
+								'#default_value' => $value ? $value : NULL
 							);
 							break;
 						case 'select':
@@ -134,8 +131,7 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
 							$form['fields'][$fid] = array(
 								'#type' => 'select',
 								'#options' => $options,
-								'#default_value' => $value || $value == 0 ? $value : NULL,
-								'#description' => $attribute['description']
+								'#default_value' => $value || $value == 0 ? $value : NULL
 							);
 							break;
 						case 'date':
@@ -143,13 +139,31 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
 							$form['fields'][$fid] = array(
 								'#type' => $attribute['type'],
 								'#default_value' => $default_value ? $default_value : NULL,
-								'#element_validate' => array('term_fields_date_validate'),
-								'#description' => $attribute['description']
+								'#element_validate' => array('term_fields_date_validate')
 							);
+							break;
+						case 'file':
+						  $form['fields'][$fid] = array(
+						    '#type' => 'file'
+						  );
+						  $current_file_fid = db_result(db_query("SELECT %s FROM {term_fields_term} WHERE tid = %d", $fid, $tid));
+						  if ($current_file_fid) {
+						    $form['fields'][$fid . '_delete'] = array(
+						      '#type' => 'checkbox',
+						     '#title' => t('Delete')
+						    );
+						  }
+						  $form['#attributes']['enctype'] = 'multipart/form-data';
 					}
 					// these fields will always be the same
 					$form['fields'][$fid]['#title'] = $attribute['title'] . ' <small>(' . $fid . ')</small>';
 					$form['fields'][$fid]['#description'] = $attribute['description'];
+					
+					// file fields are strange
+					if ($value && $attribute['type'] == 'file') {
+						$file = db_fetch_object(db_query("SELECT * FROM {files} WHERE fid = %d", $value));
+						$form['fields'][$fid]['#description'] .= '<br />' . t('Current file') . ': ' . l($file->filename, $file->filepath);
+				  }
 					
 					// we're going to make some alterations to any date fields that exist
 					$form['#after_build'] = array('term_fields_alter_date');
@@ -176,37 +190,78 @@ function term_fields_taxonomy($op, $type, $form_values) {
 	
 	switch($type) {
 		case 'term':
-			// get all fields IDs used by this vocabulary
-			$fids = term_fields_get_fids($vid);
+			// get all fields used by this vocabulary
+			$fields = term_fields_get_rows($vid);
+
+			// if for some reason we are presented with a $form_values array that does not contain
+			// all the fields for this vocabulary, then we need not be here.
+			foreach ($fields as $field) {
+			  if (!isset($form_values[$field->fid])) {
+			    return;
+			  }
+			}
 			
-			if (!empty($fids)) {
+			if (!empty($fields)) {
 				// map field values
 				$values = array();
-				foreach ($fids as $fid) {
-					$value = $form_values[$fid];
-					if (!is_array($value)) {
-						$values[$fid] = $value;
-					}
-					else {
-						// this is a date field
-						$values[$fid] = $value['year'] . '-' . $value['month'] . '-' . $value['day'];
-					}
+				//print_r($form_values);
+				foreach ($fields as $field) {
+				  $value = $form_values[$field->fid];
+				  switch($field->type) {
+				    case 'date':
+				      $values[$field->fid] = $value['year'] . '-' . $value['month'] . '-' . $value['day'];
+				      break;
+				    case 'file':
+				      $current_file_fid = db_result(db_query("SELECT %s FROM {term_fields_term} WHERE tid = %d", $field->fid, $tid));
+				      $current_file = db_fetch_object(db_query("SELECT * FROM {files} WHERE fid = %d", $current_file_fid));
+				      if ($form_values[$field->fid . '_delete']) {
+				        // delete from database
+				        db_query("DELETE FROM {files} WHERE fid = %d", $current_file_fid);
+				        // remove from file system
+				        file_delete($current_file->filepath);
+				        
+				        $values[$field->fid] = 0;
+				      } else {
+				        $options = unserialize($field->options);
+				        if (!isset($options['file_max_size'])) {
+				          $file_max_size = 1;
+				        }
+				        if (isset($options['file_allowed_exts'])) {
+				          $file_allowed_exts = implode(' ', $options['file_allowed_exts']);
+				        } else {
+				          $file_allowed_exts = 'txt';
+			  	      }
+				        $validators = array(
+                  'file_validate_size' => array($file_max_size * 1024 * 1024),
+                  'file_validate_extensions' => array($file_allowed_exts)
+                );
+                if ($file = file_save_upload($field->fid, $validators, file_directory_path())) {
+                  file_set_status($file, 1);
+                  if ($current_file_fid) {
+                    // get rid of old file
+                    db_query("DELETE FROM {files} WHERE fid = %d", $current_file_fid);
+                    file_delete($current_file->filepath);
+                  }
+                  $values[$field->fid] = $file->fid;
+                }
+				      }
+              break;
+				    default:
+				      $values[$field->fid] = $value;
+				      break;
+				  }
 				}
 	
 				// some simple clean up and validation
 				foreach ($values as $fid => $value) {
-					$sql = "SELECT type, options FROM {term_fields} WHERE fid = '%s'";
-					$record = db_fetch_object(db_query($sql, $fid));
-		
-					switch ($record->type) {
+		      $type = $fields[$fid]->type;
+					switch ($type) {
 						case 'numeric':
 							if (!is_numeric($value) && $value != '') {
 								drupal_set_message(t('!fid must be numeric. This field was not set.', array('!fid' => $fid)), 'error');
 								unset($values[$fid]);
 							}
 							break;
-						case 'select':
-							$options = unserialize($options);
 					}
 				}
 				
@@ -317,17 +372,17 @@ function term_fields_get_fids($vid = NULL) {
  * Get all values from rows in the term_fields table.
  */
 function term_fields_get_rows($vid = NULL) {
-	if ($vid) {
+	if ($vid && is_numeric($vid)) {
 		$sql = 'SELECT * FROM {term_fields} WHERE vid = %d';
+		$result = db_query($sql, $vid);
 	}
 	else {
 		$sql = 'SELECT * FROM {term_fields}';
+		$result = db_query($sql);
 	}
-	$result = db_query($sql);
 	$rows = array();
 	while ($data = db_fetch_object($result)) {
 		$fid = $data->fid;
-		unset($data->fid);
 		$rows[$fid] = $data;
 	}
 
