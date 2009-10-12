@@ -65,7 +65,7 @@ function term_fields_perm() {
  */
 function term_fields_form_alter(&$form, &$form_state, $form_id) {
 	// we don't want our form to appear on the deletion confirmation screen
-	if ($_POST['op'] == 'Delete') {
+	if ($_POST['op'] == t('Delete')) {
 		return;
 	}
 	
@@ -122,7 +122,7 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
 							$form['fields'][$fid] = array(
 								'#type' => 'textfield',
 								'#size' => 2,
-								'#default_value' => $value ? $value : NULL
+								'#default_value' => isset($value) ? $value : NULL,
 							);
 							break;
 						case 'select':
@@ -378,7 +378,7 @@ function term_fields_get_rows($vid = NULL) {
 	}
 	else {
 		$sql = 'SELECT * FROM {term_fields}';
-		$result = db_query($sql);
+		$result = db_query($sql, $vid);
 	}
 	$rows = array();
 	while ($data = db_fetch_object($result)) {
