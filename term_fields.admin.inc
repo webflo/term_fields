@@ -108,8 +108,8 @@ function term_fields_admin_new() {
  */
 function term_fields_admin_new_validate($form, &$form_state) {
 	$values = $form_state['values'];
-	if (!term_fields_check_acceptable($values['fid'])) {
-		form_set_error('fid', t('The Field ID must only only contain alphanumeric characters and underscores'));
+	if (! preg_match('~^[a-z]([_\w]*[a-z0-9]$|$)~', $values['fid'])) {
+		form_set_error('fid', t('The Field ID must only only contain alphanumeric characters and underscores. It should also begin by an alphabetic character and cannot finish by an underscore.'));
 	}
 	$bad_fids = array('name', 'description', 'numeric');
 	$fids = term_fields_get_fids();

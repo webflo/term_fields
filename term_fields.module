@@ -64,120 +64,105 @@ function term_fields_perm() {
  * Implementation of hook_form_alter().
  */
 function term_fields_form_alter(&$form, &$form_state, $form_id) {
-	// we don't want our form to appear on the deletion confirmation screen
-	if ($_POST['op'] == t('Delete')) {
-		return;
-	}
-	
-	// shortcuts
-	$tid = $form['tid']['#value'];
-	$vid = $form['vid']['#value'];
-	
-	switch ($form_id) {
-		case 'taxonomy_form_term':
-			// make the initial fieldset
-			$form['fields'] = array(
-				'#type' => 'fieldset',
-				'#title' => 'Term Fields',
-				'#collapsed' => TRUE,
-				'#collapsible' => TRUE,
-				'#weight' => 1
-			);
-				
-			// get all fields for this vocabulary
-			$sql = 'SELECT * FROM {term_fields} WHERE vid = %d ORDER BY weight';
-			$result = db_query($sql, $vid);
-			$fields = array();
-			while ($data = db_fetch_object($result)) {
-				$fields[$data->fid]['title'] = $data->title;
-				$fields[$data->fid]['description'] = $data->description;
-				$fields[$data->fid]['type'] = $data->type;
-				$fields[$data->fid]['options'] = $data->options;
-			}
-			if (!empty($fields)) {
-				// render the fields
-				foreach ($fields as $fid => $attribute) {
-					$sql = 'SELECT %s FROM {term_fields_term} WHERE tid = %d';
-					$value = db_result(db_query($sql, $fid, $tid));
-					
-					// some values are going to be conditional based on the data type
-					switch ($attribute['type']) {
-						case 'textfield':
-							$form['fields'][$fid] = array(
-								'#type' => $attribute['type'],
-								'#size' => 30,
-								'#max_length' => 100,
-								'#default_value' => $value ? $value : NULL
-							);
-							break;
-						case 'textarea':
-							$form['fields'][$fid] = array(
-								'#type' => $attribute['type'],
-								'#rows' => 5,
-								'#cols' => 60,
-								'#default_value' => $value ? $value : NULL
-							);
-							break;
-						case 'numeric':
-							$form['fields'][$fid] = array(
-								'#type' => 'textfield',
-								'#size' => 2,
-								'#default_value' => isset($value) ? $value : NULL,
-							);
-							break;
-						case 'select':
-							$options = unserialize($attribute['options']);
-							$options = array('' => '') + $options;
-							$form['fields'][$fid] = array(
-								'#type' => 'select',
-								'#options' => $options,
-								'#default_value' => $value || $value == 0 ? $value : NULL
-							);
-							break;
-						case 'date':
-							$default_value = date_parse($value);
-							$form['fields'][$fid] = array(
-								'#type' => $attribute['type'],
-								'#default_value' => $default_value ? $default_value : NULL,
-								'#element_validate' => array('term_fields_date_validate')
-							);
-							break;
-						case 'file':
-						  $form['fields'][$fid] = array(
-						    '#type' => 'file'
-						  );
-						  $current_file_fid = db_result(db_query("SELECT %s FROM {term_fields_term} WHERE tid = %d", $fid, $tid));
-						  if ($current_file_fid) {
-						    $form['fields'][$fid . '_delete'] = array(
-						      '#type' => 'checkbox',
-						     '#title' => t('Delete')
-						    );
-						  }
-						  $form['#attributes']['enctype'] = 'multipart/form-data';
-					}
-					// these fields will always be the same
-					$form['fields'][$fid]['#title'] = $attribute['title'] . ' <small>(' . $fid . ')</small>';
-					$form['fields'][$fid]['#description'] = $attribute['description'];
-					
-					// file fields are strange
-					if ($value && $attribute['type'] == 'file') {
-						$file = db_fetch_object(db_query("SELECT * FROM {files} WHERE fid = %d", $value));
-						$form['fields'][$fid]['#description'] .= '<br />' . t('Current file') . ': ' . l($file->filename, $file->filepath);
-				  }
-					
-					// we're going to make some alterations to any date fields that exist
-					$form['#after_build'] = array('term_fields_alter_date');
-				}
-			}
-			else {
-				$form['fields']['empty'] = array(
-					'#type' => 'item',
-					'#value' => t('There are no fields defined for the vocabulary that this term is a part of.')
-				);
-			}
-			$form['submit']['#weight'] = 10;
-			$form['delete']['#weight'] = 10;
-		}
+  // we don't want our form to appear on the deletion confirmation screen
+  if (isset($_POST['op']) && $_POST['op'] == 'Delete') {
+    return;
+  }
+  
+  if ($form_id == 'taxonomy_form_term') {
+    // shortcuts
+    $tid = $form['tid']['#value'];
+    $vid = $form['vid']['#value'];
+
+    // make the initial fieldset
+    $form['fields'] = array(
+      '#type' => 'fieldset',
+      '#title' => 'Term Fields',
+      '#collapsed' => TRUE,
+      '#collapsible' => TRUE,
+      '#weight' => 1
+    );
+      
+    // get all fields for this vocabulary
+    $sql = 'SELECT * FROM {term_fields} WHERE vid = %d ORDER BY weight';
+    $result = db_query($sql, $vid);
+    $fields = array();
+    while ($data = db_fetch_object($result)) {
+      $fields[$data->fid]['title'] = $data->title;
+      $fields[$data->fid]['description'] = $data->description;
+      $fields[$data->fid]['type'] = $data->type;
+      $fields[$data->fid]['options'] = $data->options;
+    }
+    if (!empty($fields)) {
+      // render the fields
+      foreach ($fields as $fid => $attribute) {
+        $sql = 'SELECT %s FROM {term_fields_term} WHERE tid = %d';
+        $value = db_result(db_query($sql, $fid, $tid));
+        
+        // some values are going to be conditional based on the data type
+        switch ($attribute['type']) {
+          case 'textfield':
+            $form['fields'][$fid] = array(
+              '#type' => $attribute['type'],
+              '#size' => 30,
+              '#max_length' => 100,
+              '#default_value' => $value ? $value : NULL,
+              '#description' => $attribute['description']
+            );
+            break;
+          case 'textarea':
+            $form['fields'][$fid] = array(
+              '#type' => $attribute['type'],
+              '#rows' => 5,
+              '#cols' => 60,
+              '#default_value' => $value ? $value : NULL,
+              '#description' => $attribute['description']
+            );
+            break;
+          case 'numeric':
+            $form['fields'][$fid] = array(
+              '#type' => 'textfield',
+              '#size' => 2,
+              '#default_value' => isset($value) ? $value : NULL,
+              '#description' => $attribute['description']
+            );
+            break;
+          case 'select':
+            $options = unserialize($attribute['options']);
+            $options = array('' => '') + $options;
+            $form['fields'][$fid] = array(
+              '#type' => 'select',
+              '#options' => $options,
+              '#default_value' => $value || $value == 0 ? $value : NULL,
+              '#description' => $attribute['description']
+            );
+            break;
+          case 'date':
+            $default_value = date_parse($value);
+            $form['fields'][$fid] = array(
+              '#type' => $attribute['type'],
+              '#default_value' => $default_value ? $default_value : NULL,
+              '#element_validate' => array('term_fields_date_validate'),
+              '#description' => $attribute['description']
+            );
+        }
+        // these fields will always be the same
+        $form['fields'][$fid]['#title'] = $attribute['title'] . ' <small>(' . $fid . ')</small>';
+        $form['fields'][$fid]['#description'] = $attribute['description'];
+        
+        // we're going to make some alterations to any date fields that exist
+        $form['#after_build'] = array('term_fields_alter_date');
+      }
+    }
+    else {
+      $form['fields']['empty'] = array(
+        '#type' => 'item',
+        '#value' => t('There are no fields defined for the vocabulary that this term is a part of.')
+      );
+    }
+    $form['submit']['#weight'] = 10;
+    $form['delete']['#weight'] = 10;
+  }
 }
 
 /**
@@ -345,7 +330,7 @@ function term_fields_get_term($tid) {
 function term_fields_views_api() {
 	return array(
 		'api' => 2,
-		'path' => drupal_get_path('module', 'term_fields') . '/views'
+		'path' => drupal_get_path('module', 'term_fields') . '/views',
 	);
 }
 
@@ -395,20 +380,6 @@ function term_fields_get_rows($vid = NULL) {
 function term_fields_get_row($fid) {
 	$sql = "SELECT * FROM {term_fields} WHERE fid = '%s'";
 	return db_fetch_object(db_query($sql));
-}
-
-/**
- * Check a string to make sure all the characters are acceptable.
- */
-function term_fields_check_acceptable($string, $acceptable = 'abcdefghijklmnopqrstuvwxyz1234567890_') {
-	$string = str_split($string);
-	$acceptable = str_split($acceptable);
-	foreach ($string as $character) {
-		if (!in_array(strtolower($character), $acceptable)) {
-			return FALSE;
-		}
-	}
-	return TRUE;
 }
 
 /**
@@ -493,8 +464,7 @@ function term_fields_date_validate($element, &$form_state) {
 	// they can only have either all 3 of them set, or all 3 of them unset
 	if (empty($year) || empty($month) || empty($day)) {
 		if (!(empty($year) && empty($month) && empty($day))) {
-			form_set_error($element['#name'], t("A value must be specified for month, day and year.
-																					If you want to make this field blank, unset all three fields."));
+			form_set_error($element['#name'], t("A value must be specified for month, day and year. If you want to make this field blank, unset all three fields."));
 		}
 	}
 }
