@@ -145,10 +145,29 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
               '#element_validate' => array('term_fields_date_validate'),
               '#description' => $attribute['description']
             );
+            case 'file':
+              $form['fields'][$fid] = array(
+                '#type' => 'file'
+              );
+              $current_file_fid = db_result(db_query("SELECT %s FROM {term_fields_term} WHERE tid = %d", $fid, $tid));
+              if ($current_file_fid) {
+                $form['fields'][$fid . '_delete'] = array(
+                  '#type' => 'checkbox',
+                 '#title' => t('Delete')
+                );
+              }
+              $form['#attributes']['enctype'] = 'multipart/form-data';
+              break;
         }
         // these fields will always be the same
         $form['fields'][$fid]['#title'] = $attribute['title'] . ' <small>(' . $fid . ')</small>';
         $form['fields'][$fid]['#description'] = $attribute['description'];
+        
+        // file fields are strange
+        if ($value && $attribute['type'] == 'file') {
+          $file = db_fetch_object(db_query("SELECT * FROM {files} WHERE fid = %d", $value));
+          $form['fields'][$fid]['#description'] .= '<br />' . t('Current file') . ': ' . l($file->filename, $file->filepath);
+        }
         
         // we're going to make some alterations to any date fields that exist
         $form['#after_build'] = array('term_fields_alter_date');
