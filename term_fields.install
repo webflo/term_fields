@@ -28,42 +28,42 @@ function term_fields_schema() {
 				'type' => 'varchar',
 				'length' => 32,
 				'not null' => TRUE,
-				'description' => t('The unique field identifier.')
+				'description' => 'The unique field identifier.',
 			),
 			'vid' => array(
 				'type' => 'int',
 				'unsigned' => TRUE,
 				'not null' => TRUE,
-				'description' => t('The vocabulary id of which field values can be set.')
+				'description' => 'The vocabulary id of which field values can be set.',
 			),
 			'title' => array(
 				'type' => 'varchar',
 				'length' => 255,
 				'not null' => TRUE,
-				'description' => t('The human readable name of this field.')
+				'description' => 'The human readable name of this field.',
 			),
 			'description' => array(
 				'type' => 'text',
 				'size' => 'medium',
-				'description' => t('A description of the field for users.')
+				'description' => 'A description of the field for users.',
 			),
 			'type' => array(
 				'type' => 'varchar',
 				'length' => 32,
 				'not null' => TRUE,
-				'description' => t('The type of field.')
+				'description' => 'The type of field.',
 			),
 			'weight' => array(
 				'type' => 'int',
 				'size' => 'tiny',
 				'unsigned' => FALSE,
 				'not null' => TRUE,
-				'description' => t('The weight of the field.')
+				'description' => 'The weight of the field.',
 			),
 			'options' => array(
 				'type' => 'text',
 				'size' => 'big',
-				'description' => t('Serialized array of options used for select type fields.')
+				'description' => 'Serialized array of options used for select type fields.',
 			)
 		),
 		'indexes' => array(

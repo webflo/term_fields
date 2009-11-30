@@ -7,45 +7,45 @@
  */
 function term_fields_menu() {
   $items['admin/content/taxonomy/term_fields'] = array(
-    'title' => t('Fields'),
+    'title' => 'Fields',
     'page callback' => 'term_fields_admin',
-    'description' => t('An overview of term fields.'),
+    'description' => 'An overview of term fields.',
     'access arguments' => array('administer term fields'),
     'type' => MENU_LOCAL_TASK,
     'file' => 'term_fields.admin.inc'
   );
   $items['admin/content/taxonomy/term_fields/new'] = array(
-  	'title' => t('New Field'),
+  	'title' => 'Add field',
   	'page callback' => 'drupal_get_form',
   	'page arguments' => array('term_fields_admin_new'),
-  	'description' => t('Form used to create new term fields.'),
+  	'description' => 'Form used to create new term fields.',
   	'access arguments' => array('administer term fields'),
   	'type' => MENU_LOCAL_TASK,
   	'file' => 'term_fields.admin.inc'
   );
   $items['admin/content/taxonomy/term_fields/settings'] = array(
-  	'title' => t('Settings'),
+  	'title' => 'Settings',
   	'page callback' => 'drupal_get_form',
   	'page arguments' => array('term_fields_admin_settings'),
-  	'description' => t('Form used to change settings.'),
+  	'description' => 'Form used to change field settings.',
   	'access arguments' => array('administer term fields'),
   	'type' => MENU_LOCAL_TASK,
   	'file' => 'term_fields.admin.inc'
   );
   $items['admin/content/taxonomy/term_fields/edit/%fid'] = array(
-  	'title' => t('Edit Field'),
+  	'title' => 'Edit field',
   	'page callback' => 'drupal_get_form',
   	'page arguments' => array('term_fields_admin_edit', 5),
-  	'description' => t('Form used to edit term fields.'),
+  	'description' => 'Form used to edit term fields.',
   	'access arguments' => array('administer term fields'),
   	'type' => MENU_CALLBACK,
   	'file' => 'term_fields.admin.inc'
   );
   $items['admin/content/taxonomy/term_fields/delete/%fid'] = array(
-  	'title' => t('Delete Field'),
+  	'title' => 'Delete field',
   	'page callback' => 'drupal_get_form',
   	'page arguments' => array('term_fields_admin_delete', 5),
-  	'description' => t('Form used to delete term fields.'),
+  	'description' => 'Form used to delete term fields.',
   	'access arguments' => array('administer term fields'),
   	'type' => MENU_CALLBACK,
   	'file' => 'term_fields.admin.inc'
@@ -68,7 +68,7 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
   if (isset($_POST['op']) && $_POST['op'] == 'Delete') {
     return;
   }
-  
+
   if ($form_id == 'taxonomy_form_term') {
     // shortcuts
     $tid = $form['tid']['#value'];
@@ -77,12 +77,12 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
     // make the initial fieldset
     $form['fields'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Term Fields',
+      '#title' => 'Term fields',
       '#collapsed' => TRUE,
       '#collapsible' => TRUE,
       '#weight' => 1
     );
-      
+
     // get all fields for this vocabulary
     $sql = 'SELECT * FROM {term_fields} WHERE vid = %d ORDER BY weight';
     $result = db_query($sql, $vid);
@@ -98,7 +98,7 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
       foreach ($fields as $fid => $attribute) {
         $sql = 'SELECT %s FROM {term_fields_term} WHERE tid = %d';
         $value = db_result(db_query($sql, $fid, $tid));
-        
+
         // some values are going to be conditional based on the data type
         switch ($attribute['type']) {
           case 'textfield':
@@ -107,7 +107,7 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
               '#size' => 30,
               '#max_length' => 100,
               '#default_value' => $value ? $value : NULL,
-              '#description' => $attribute['description']
+              '#description' => $attribute['description'],
             );
             break;
           case 'textarea':
@@ -116,7 +116,7 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
               '#rows' => 5,
               '#cols' => 60,
               '#default_value' => $value ? $value : NULL,
-              '#description' => $attribute['description']
+              '#description' => $attribute['description'],
             );
             break;
           case 'numeric':
@@ -124,7 +124,7 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
               '#type' => 'textfield',
               '#size' => 2,
               '#default_value' => isset($value) ? $value : NULL,
-              '#description' => $attribute['description']
+              '#description' => $attribute['description'],
             );
             break;
           case 'select':
@@ -134,7 +134,7 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
               '#type' => 'select',
               '#options' => $options,
               '#default_value' => $value || $value == 0 ? $value : NULL,
-              '#description' => $attribute['description']
+              '#description' => $attribute['description'],
             );
             break;
           case 'date':
@@ -143,32 +143,32 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
               '#type' => $attribute['type'],
               '#default_value' => $default_value ? $default_value : NULL,
               '#element_validate' => array('term_fields_date_validate'),
-              '#description' => $attribute['description']
+              '#description' => $attribute['description'],
             );
             case 'file':
               $form['fields'][$fid] = array(
-                '#type' => 'file'
+                '#type' => 'file',
               );
               $current_file_fid = db_result(db_query("SELECT %s FROM {term_fields_term} WHERE tid = %d", $fid, $tid));
               if ($current_file_fid) {
                 $form['fields'][$fid . '_delete'] = array(
                   '#type' => 'checkbox',
-                 '#title' => t('Delete')
+                  '#title' => t('Delete'),
                 );
               }
               $form['#attributes']['enctype'] = 'multipart/form-data';
               break;
         }
         // these fields will always be the same
-        $form['fields'][$fid]['#title'] = $attribute['title'] . ' <small>(' . $fid . ')</small>';
-        $form['fields'][$fid]['#description'] = $attribute['description'];
-        
+        $form['fields'][$fid]['#title'] = t('@title (@fid)', array('@title' => $attribute['title'], '@fid' => $fid));
+        $form['fields'][$fid]['#description'] = check_plain($attribute['description']);
+
         // file fields are strange
         if ($value && $attribute['type'] == 'file') {
           $file = db_fetch_object(db_query("SELECT * FROM {files} WHERE fid = %d", $value));
-          $form['fields'][$fid]['#description'] .= '<br />' . t('Current file') . ': ' . l($file->filename, $file->filepath);
+          $form['fields'][$fid]['#description'] .= '<br />' . t('Current file: <a href="@filepath">@filename</a>.', array('@filename' => $file->filename, '@filepath' => $file->filepath));
         }
-        
+
         // we're going to make some alterations to any date fields that exist
         $form['#after_build'] = array('term_fields_alter_date');
       }
@@ -176,7 +176,7 @@ function term_fields_form_alter(&$form, &$form_state, $form_id) {
     else {
       $form['fields']['empty'] = array(
         '#type' => 'item',
-        '#value' => t('There are no fields defined for the vocabulary that this term is a part of.')
+        '#value' => t('There are no fields defined for the vocabulary that this term is a part of.'),
       );
     }
     $form['submit']['#weight'] = 10;
@@ -191,7 +191,7 @@ function term_fields_taxonomy($op, $type, $form_values) {
 	// shortcuts
 	$tid = $form_values['tid'];
 	$vid = $form_values['vid'];
-	
+
 	switch($type) {
 		case 'term':
 			// get all fields used by this vocabulary
@@ -204,7 +204,7 @@ function term_fields_taxonomy($op, $type, $form_values) {
 			    return;
 			  }
 			}
-			
+
 			if (!empty($fields)) {
 				// map field values
 				$values = array();
@@ -223,7 +223,7 @@ function term_fields_taxonomy($op, $type, $form_values) {
 				        db_query("DELETE FROM {files} WHERE fid = %d", $current_file_fid);
 				        // remove from file system
 				        file_delete($current_file->filepath);
-				        
+
 				        $values[$field->fid] = 0;
 				      } else {
 				        $options = unserialize($field->options);
@@ -255,26 +255,26 @@ function term_fields_taxonomy($op, $type, $form_values) {
 				      break;
 				  }
 				}
-	
+
 				// some simple clean up and validation
 				foreach ($values as $fid => $value) {
 		      $type = $fields[$fid]->type;
 					switch ($type) {
 						case 'numeric':
 							if (!is_numeric($value) && $value != '') {
-								drupal_set_message(t('!fid must be numeric. This field was not set.', array('!fid' => $fid)), 'error');
+								drupal_set_message(t('%fid must be numeric. This field was not set.', array('%fid' => $fid)), 'error');
 								unset($values[$fid]);
 							}
 							break;
 					}
 				}
-				
+
 				// if there's no values to set then we need to get out of here
 				// the exception being if the term is being deleted
 				if ($op != 'delete' && count($values) == 0) {
 					break;
 				}
-	
+
 				switch ($op) {
 					case 'insert':
 						term_fields_term_create_record($tid, $values);
@@ -328,7 +328,7 @@ function term_fields_get_fields($term) {
 	$field_list = implode(',', $fids);
 	$sql = 'SELECT ' . $field_list .  ' FROM {term_fields_term} WHERE tid = %d';
 	$result = db_query($sql, $term->tid);
-	
+
 	return db_fetch_array($result);
 }
 
@@ -339,7 +339,7 @@ function term_fields_get_term($tid) {
 	$term = taxonomy_get_term($tid);
 	$fields = term_fields_get_fields($term);
 	$term->fields = $fields;
-	
+
 	return $term;
 }
 
@@ -368,7 +368,7 @@ function term_fields_get_fids($vid = NULL) {
 	while ($data = db_fetch_object($result)) {
 		$fields[] = $data->fid;
 	}
-	
+
 	return $fields;
 }
 
@@ -408,17 +408,17 @@ function term_fields_term_create_record($tid, $values) {
 	// create a comma separted list of fields to be used in the query
 	$fields = array_keys($values);
 	$field_list = implode(', ', $fields);
-			
+
 	// create a list of place holders so db_query() can do it's thing
 	$placeholders = '';
 	foreach ($values as $value) {
 		$placeholders = $placeholders . (is_numeric($value) ? "%d, " : "'%s', ");
 	}
 	$placeholders = rtrim($placeholders, ', ');
-			
+
 	// put the term id at the beginning of the array
 	array_unshift($values, $tid);
-			
+
 	// go go go
 	$sql = 'INSERT INTO {term_fields_term} (tid, ' . $field_list . ') VALUES (%d, ' . $placeholders . ')';
 	db_query($sql, $values);
@@ -428,17 +428,17 @@ function term_fields_term_create_record($tid, $values) {
  * Update an existing record in the term_fields_term table.
  */
 function term_fields_term_update_record($tid, $values) {
-	
+
 	// create a list of fields and their respective placeholders for db_query()
 	$placeholders = '';
 	foreach ($values as $fid => $value) {
 		$placeholders = $placeholders . $fid . ' = ' . (is_numeric($value) ? "%d, " : "'%s', ");
 	}
 	$placeholders = rtrim($placeholders, ', ');
-			
+
 	// add the tid on to the end of the array
 	array_push($values, $tid);
-			
+
 	// construct and execute
 	$sql = 'UPDATE {term_fields_term} SET ' . $placeholders . ' WHERE tid = %d';
 	db_query($sql, $values);
@@ -461,7 +461,7 @@ function term_fields_alter_date($form, $form_element) {
 			$form['fields'][$did]['year']['#options'] = $blank + $form['fields'][$did]['year']['#options'];
 			$form['fields'][$did]['month']['#options'] = $blank + $form['fields'][$did]['month']['#options'];
 			$form['fields'][$did]['day']['#options'] = $blank + $form['fields'][$did]['day']['#options'];
-			
+
 			// give titles to each list
 			$form['fields'][$did]['year']['#title'] = t('Year');
 			$form['fields'][$did]['month']['#title'] = t('Month');
@@ -478,12 +478,12 @@ function term_fields_date_validate($element, &$form_state) {
 	$year = $element['year']['#value'];
 	$month = $element['month']['#value'];
 	$day = $element['day']['#value'];
-	
+
 	// we allow the user to unset date fields by leaving all fields (day, month AND year) blank
 	// they can only have either all 3 of them set, or all 3 of them unset
 	if (empty($year) || empty($month) || empty($day)) {
 		if (!(empty($year) && empty($month) && empty($day))) {
-			form_set_error($element['#name'], t("A value must be specified for month, day and year. If you want to make this field blank, unset all three fields."));
+			form_set_error($element['#name'], t('A value must be specified for month, day and year. If you want to make this field blank, unset all three fields.'));
 		}
 	}
 }
@@ -498,7 +498,7 @@ function fid_load($fid) {
 			return $fid;
 		}
 	}
-	
+
 	return FALSE;
 }
 
@@ -530,12 +530,12 @@ function term_fields_format_date($date) {
 function term_fields_fetch_fields($result) {
 	$rows = array();
 	while ($data = db_fetch_object($result)) {
-		$rows[$data->fid]['title'] = $data->title . ' <small>(' . $data->fid . ')</small>';
-		$rows[$data->fid]['vocab'] = $data->name;
-		$rows[$data->fid]['desc'] = $data->description;
+		$rows[$data->fid]['title'] = t('@title (@fid)', array('@title' => $data->title, '@fid' => $data->fid));
+		$rows[$data->fid]['vocab'] = check_plain($data->name);
+		$rows[$data->fid]['desc'] = check_plain($data->description);
 		$rows[$data->fid]['edit'] = l(t('Edit'), 'admin/content/taxonomy/term_fields/edit/' . $data->fid);
 	}
-	
+
 	return !empty($rows) ? $rows : 0;
 }
 

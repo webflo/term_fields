@@ -8,7 +8,7 @@ function term_fields_views_data() {
 	if (!empty($fields)) {
 		$data = array();
 		$data['term_fields_term']['table']['group'] = t('Term Fields');
-	
+
 		$data['term_fields_term']['table']['join']['term_data'] = array(
 			'left_field' => 'tid',
 			'field' => 'tid'
@@ -99,12 +99,12 @@ function term_fields_views_data() {
 				    )
 				  );
 			}
-		
+
 			// all fields get this
-			$data['term_fields_term'][$fid]['title'] = $record->title . ' (' . $fid . ')';
-			$data['term_fields_term'][$fid]['help'] = t('The value of !fid for this particular term.', array('!fid' => $fid));
+			$data['term_fields_term'][$fid]['title'] = t('@title (@fid)', array('@title' => $record->title, '@fid' => $fid));
+			$data['term_fields_term'][$fid]['help'] = t('The value of %fid for this particular term.', array('%fid' => $fid));
 		}
-	
+
 		return $data;
 	}
 }

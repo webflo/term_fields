@@ -12,7 +12,7 @@ function term_fields_admin() {
 	foreach ($vocabs as $vid => $vocab) {
 		$vocabularies[$vid] = $vocab->name;
 	}
-  
+
   $result = pager_query('SELECT tf.fid AS fid, tf.title AS title, tf.description AS description, v.name AS name
   										FROM {term_fields} tf
   										LEFT JOIN {vocabulary} v ON tf.vid = v.vid
@@ -38,66 +38,63 @@ function term_fields_admin_new() {
 		foreach ($vocabs as $key => $value) {
 			$vocabs_select[$key] = $value->name;
 		}
-	
+
 		$form['vid'] = array(
 			'#type' => 'select',
 			'#title' => t('Vocabulary'),
 			'#options' => $vocabs_select,
-			'#description' => t('Choose a vocabulary to assign this field to. Only terms in this vocabulary will
-												be able to use this field. Cannot be changed later.')
+			'#description' => t('Choose a vocabulary to assign this field to. Only terms in this vocabulary will be able to use this field. Cannot be changed later.'),
 		);
 		$form['fid'] = array(
 			'#type' => 'textfield',
 			'#title' => t('Field ID'),
-			'#description' => t('An ID used by Drupal to identify this field. It must be unique. Only alphanumeric characters and underscores allowed. Cannot be changed later.'),
+		  '#description' => t('The machine-readable name of the field. This name must contain only lowercase letters, numbers, and underscores. This name cannot be changed.'),
 			'#required' => TRUE,
-			'#maxlength' => 32
+			'#maxlength' => 32,
 		);
 		$form['title'] = array(
 			'#type' => 'textfield',
 			'#title' => t('Title'),
-			'#description' => t('The readable name of this field. Can be changed later.'),
+			'#description' => t('A human-readable name to be used as the label for this field.'),
 			'#required' => TRUE,
 			'#element_validate' => array('title_validate'),
-			'#maxlength' => 50
+			'#maxlength' => 50,
 		);
 		$form['description'] = array(
 			'#type' => 'textfield',
 			'#title' => t('Description'),
-			'#description' => t('Enter a short description of this field to explain what the field is used for. Can be changed later.'),
-			'#maxlength' => 100
+			'#description' => t('Enter a short description of this field to explain what the field is used for.'),
+			'#maxlength' => 100,
 		);
 		$form['type'] = array(
 			'#type' => 'radios',
 			'#title' => t('Type'),
 			'#options' => array(
-				'textfield' => t('Single row textbox'),
-				'textarea' => t('Multi-row textarea'),
-				'numeric' => t('Numeric'),
-				'select' => t('Select box'),
-				'date' => t('Date'),
-				'file' => t('File')
+        'date' => t('Date'),
+        'file' => t('File'),
+		    'numeric' => t('Integer'),
+        'select' => t('Select list'),
+        'textarea' => t('Text area (multiple rows)'),
+		    'textfield' => t('Text field'),
 			),
-			'#description' => t('Define what type of field to use. Single line textboxes should
-													be used for fields such as names and dates, while multi line textareas
-													should be used for longer fields, such as biographies. Cannot be changed later.'),
+			'#description' => t('Define what type of field to use. Single line textboxes should	be used for fields such as names and dates, while multi line textareas should be used for longer fields, such as biographies. Cannot be changed later.'),
 			'#required' => TRUE
 		);
 		$form['weight'] = array(
 			'#type' => 'weight',
 			'#title' => t('Weight'),
 			'#default_value' => 0,
-			'#description' => t('Heaveier weighted items get put at the bottom of lists. Can be changed later.')
+			'#description' => t('Heavier weighted items get put at the bottom of lists.')
 		);
 		$form['fields']['submit'] = array(
 			'#type' => 'submit',
-			'#value' => t('Submit'),
+			'#value' => t('Save'),
 		);
 	}
 	else {
 		$form['empty'] = array(
 			'#type' => 'item',
-			'#value' => t('You have to !add before you can add fields.', array('!add' => l('add a vocabulary', 'admin/content/taxonomy/add/vocabulary')))
+			'#value' => t('You have to <a href="@add-vocabulary">add a vocabulary</a> before you can add fields.', array('@add-vocabulary' => url('admin/content/taxonomy/add/vocabulary'))),
 		);
 	}
 	return $form;
@@ -109,7 +106,7 @@ function term_fields_admin_new() {
 function term_fields_admin_new_validate($form, &$form_state) {
 	$values = $form_state['values'];
 	if (! preg_match('~^[a-z]([_\w]*[a-z0-9]$|$)~', $values['fid'])) {
-		form_set_error('fid', t('The Field ID must only only contain alphanumeric characters and underscores. It should also begin by an alphabetic character and cannot finish by an underscore.'));
+		form_set_error('fid', t('The field ID must contain only lowercase letters, numbers, and underscores. It should also begin by an alphabetic character and cannot finish by an underscore.'));
 	}
 	$bad_fids = array('name', 'description', 'numeric');
 	$fids = term_fields_get_fids();
@@ -117,7 +114,7 @@ function term_fields_admin_new_validate($form, &$form_state) {
 		$bad_fids = $bad_fids + $fids;
 	}
 	if (in_array(strtolower($values['fid']), $bad_fids)) {
-		form_set_error('fid', t('The field ID !fid cannot be used. It is either already being used by another field, or is a reserved internal name.', array('!fid' => '<i>' . $values['fid'] . '</i>')));
+		form_set_error('fid', t('The field ID %fid cannot be used. It is either already being used by another field, or is a reserved internal name.', array('%fid' => $values['fid'])));
 	}
 }
 
@@ -126,9 +123,9 @@ function term_fields_admin_new_validate($form, &$form_state) {
  */
 function term_fields_admin_new_submit($form, &$form_state) {
 	$values = $form_state['values'];
-	
+
 	$values['fid'] = strtolower($values['fid']);
-	
+
 	// determine which data type to use for the new column
 	switch ($values['type']) {
 		case 'textfield':
@@ -143,10 +140,10 @@ function term_fields_admin_new_submit($form, &$form_state) {
 		case 'date':
 			$data_type = 'DATETIME';
 	}
-	
+
 	// success
-	drupal_set_message(t($values['title'] . ' (' . $values['fid'] . ') was successfully created.'));
-	
+	drupal_set_message(t('The field %title (%fid) has been created.', array('%title' => $values['title'], '%fid' => $values['fid'])));
+
 	// make a new record in the term_fields table
 	// select type fields need a default value for the options column
 	if ($values['type'] != 'select') {
@@ -162,7 +159,7 @@ function term_fields_admin_new_submit($form, &$form_state) {
 		drupal_set_message(t('You should now specify some options for your select field.'));
 		$form_state['redirect'] = 'admin/content/taxonomy/term_fields/edit/' . $values['fid'];
 	}
-	
+
 	// add the new column
 	$sql = "ALTER TABLE {term_fields_term} ADD %s %s";
 	db_query($sql, $values['fid'], $data_type);
@@ -179,35 +176,35 @@ function term_fields_admin_settings() {
     'M j Y', 'j M Y', 'Y M j',
     'M j Y', 'j M Y', 'Y M j'
 	);
-	
+
 	$options = array();
 	foreach ($formats as $format) {
 		$options[$format] = format_date(time(), 'custom', $format);
 	}
 	$form['date_format'] = array(
 		'#type' => 'select',
-		'#title' => t('Date Field Format'),
+		'#title' => t('Date field format'),
 		'#description' => t('The format to be used when displaying date fields.'),
 		'#default_value' => variable_get('term_fields_date_format', ''),
 		'#options' => $options
 	);
 	$form['custom'] = array(
 		'#type' => 'textfield',
-		'#title' => t('Custom Date Format'),
+		'#title' => t('Custom date format'),
 		'#default_value' => variable_get('term_fields_date_format_custom', ''),
-		'#description' => t('A user-defined date format. If set, it will be used instead of what is set in the Date Field Format field. Leave blank to disable. See the <a href="@url">PHP manual</a> for available options.', array('@url' => 'http://php.net/manual/function.date.php')),
+		'#description' => t('A user-defined date format. If set, it will be used instead of what is set in the Date field format field. Leave blank to disable. See the <a href="@url">PHP manual</a> for available options.', array('@url' => 'http://php.net/manual/function.date.php')),
 		'#size' => 5
 	);
 	$form['per_page'] = array(
 		'#type' => 'textfield',
-		'#title' => t('Fields Per Page'),
-		'#description' => t('How many fields to show per page on the fields administration page.'),
+		'#title' => t('Fields per page'),
+		'#description' => t('Number of fields to show per page on the fields administration page.'),
 		'#default_value' => variable_get('term_fields_per_page', 15),
 		'#size' => 3
 	);
 	$form['submit'] = array(
 		'#type' => 'submit',
-		'#value' => t('Submit')
+		'#value' => t('Save')
 	);
 	return $form;
 }
@@ -223,7 +220,7 @@ function term_fields_admin_settings_submit($form, &$form_state) {
 		variable_set('term_fields_per_page', $values['per_page']);
 	}
 	else {
-		form_set_error('per_page', t('The <i>Fields Per Page</i> value must be numeric.'));
+		form_set_error('per_page', t('The Fields per page value must be numeric.'));
 	}
 }
 
@@ -242,58 +239,62 @@ function term_fields_admin_edit($form_state, $fid) {
 		'#description' => t('You can change the title of this field here.'),
 		'#required' => TRUE,
 		'#size' => 25,
-		'#maxlength' => 50
+		'#maxlength' => 50,
 	);
 	$form['description'] = array(
 		'#type' => 'textfield',
 		'#title' => t('Description'),
 		'#default_value' => $field->description,
-		'#description' => t('You can change the description of this field here.')
+		'#description' => t('You can change the description of this field here.'),
 	);
 	if ($field->type == 'select') {
 		$form['options'] = array(
 			'#type' => 'textarea',
-			'#title' => t('Options (one per line)'),
-			'#description' => t('This field is a select box, so you have to set the options for it here. One option per line.'),
-			'#default_value' => $field->options ? implode("\n", unserialize($field->options)) : ''
+			'#title' => t('Allowed values list'),
+      '#description' => t('The possible values this field can contain. Enter one value per line, in the format key|label. The key is the value that will be stored in the database, and it must match the field storage type (text). The label is optional, and the key will be used as the label if no label is specified.'),
+			'#default_value' => $field->options ? implode("\n", unserialize($field->options)) : '',
 		);
 	}
 	elseif ($field->type == 'file') {
 	  $options = unserialize($field->options);
-	  $form['file_max_size'] = array(
-	    '#type' => 'textfield',
-	    '#title' => t('Maximum file size'),
-	    '#description' => t('Maximum size of the file in megabytes. Default is 1 MB.'),
-	    '#default_value' => isset($options['file_max_size']) ? $options['file_max_size'] : 1,
-	    '#size' => 1,
-	    '#required' => TRUE
-	  );
 	  $form['file_allowed_exts'] = array(
 	    '#type' => 'textfield',
-	    '#title' => t('Allowed extensions'),
-	    '#description' => t('Specify the allowed file extensions for this field. Separate extensions by spaces, do not include leading dot.'),
+	    '#title' => t('Permitted file extensions'),
+	    '#description' => t('Extensions that users in this role can upload. Separate extensions with a space and do not include the leading dot.'),
 	    '#default_value' => isset($options['file_allowed_exts']) ? implode(' ', $options['file_allowed_exts']) : 'txt',
 	    '#size' => 60,
-	    '#required' => TRUE
+	    '#required' => TRUE,
 	  );
+    $form['file_max_size'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Maximum file size per upload'),
+      '#description' => t('The maximum size of a file a user can upload.'),
+      '#default_value' => isset($options['file_max_size']) ? $options['file_max_size'] : 1,
+      '#size' => 1,
+      '#required' => TRUE,
+      '#field_suffix' => t('MB'),
+    );
+    $form['upload_max_size'] = array(
+      '#value' => '<p>'. t('Your PHP settings limit the maximum file size per upload to %size.', array('%size' => format_size(file_upload_max_size()))) . '</p>',
+    );
 	}
 	$form['weight'] = array(
 		'#type' => 'weight',
 		'#title' => t('Weight'),
 		'#default_value' => $field->weight,
-		'#description' => t('Fields weighted heavier appear at the bottom of lists.')
+		'#description' => t('Fields weighted heavier appear at the bottom of lists.'),
 	);
 	$form['fid'] = array(
 		'#type' => 'hidden',
-		'#value' => $fid
+		'#value' => $fid,
 	);
 	$form['submit'] = array(
 		'#type' => 'submit',
-		'#value' => t('Submit')
+		'#value' => t('Save'),
 	);
 	$form['delete'] = array(
 		'#type' => 'submit',
-		'#value' => t('Delete')
+		'#value' => t('Delete'),
 	);
 
 	drupal_set_title(drupal_get_title() . ' ' . $fid);
@@ -334,8 +335,8 @@ function term_fields_admin_edit_submit($form, &$form_state) {
 			  db_query($sql, $values['title'], $values['description'], $values['weight'], $values['fid']);
 		    break;
 		}
-	
-		drupal_set_message(t('Field <i>' . $values['fid'] . '</i> was successfully updated.'));
+
+		drupal_set_message(t('The field %fid has been updated.', array('%fid' => $values['fid'])));
 		$form_state['redirect'] = 'admin/content/taxonomy/term_fields';
 	}
 }
@@ -347,11 +348,11 @@ function term_fields_admin_delete($form_state, $fid) {
 	$form = array();
 	$form['fid'] = array(
 		'#type' => 'hidden',
-		'#value' => $fid
+		'#value' => $fid,
 	);
-	$question = t('Are you sure you want to delete !fid?', array('!fid' => $fid));
+	$question = t('Are you sure you want to delete %fid?', array('%fid' => $fid));
 	$path = 'admin/content/taxonomy/term_fields';
-	$description = t('All instances of this field will be deleted. This action cannot be undone.');
+	$description = t('If you have any content left in this field, it will be lost. This action cannot be undone.');
 	return confirm_form($form, $question, $path, $description);
 }
 
@@ -360,15 +361,15 @@ function term_fields_admin_delete($form_state, $fid) {
  */
 function term_fields_admin_delete_submit($form, &$form_state) {
 	$fid = $form_state['values']['fid'];
-	
+
 	// remove the record from term_fields
 	$sql = "DELETE FROM {term_fields} WHERE fid = '%s'";
 	db_query($sql, $fid);
-	
+
 	// remove the column from term_fields_term
 	$sql = "ALTER TABLE {term_fields_term} DROP %s";
 	db_query($sql, $fid);
-	
-	drupal_set_message(t('Field ' . $fid . ' was deleted.'));
+
+	drupal_set_message(t('The field %fid has been deleted.', array('%fid' => $fid)));
 	$form_state['redirect'] = 'admin/content/taxonomy/term_fields';
 }
