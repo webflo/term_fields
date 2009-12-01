@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * Handler that allows rendering of fields to be links to the term pages.
@@ -19,7 +20,7 @@ class term_fields_handler_field_numeric extends views_handler_field_numeric {
   }
 
   /**
-   * Provide link to term option
+   * Provide link to term option.
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
@@ -45,7 +46,7 @@ class term_fields_handler_field_numeric extends views_handler_field_numeric {
   }
 
   function render($values) {
-  	$value = $values->{$this->field_alias};
+    $value = $values->{$this->field_alias};
     if (!empty($this->options['set_precision'])) {
       $value = number_format($value, $this->options['precision'], $this->options['decimal'], $this->options['separator']);
     }

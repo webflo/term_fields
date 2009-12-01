@@ -1,9 +1,11 @@
 <?php
+// $Id$
 
 /**
  * Handler that allows rendering of fields to be links to the term pages. Taken from views_handler_field_node.inc.
- * This one is specifically for 
+ * This one is specifically for
  */
+
 class term_fields_handler_field_date extends views_handler_field {
   /**
    * Constructor to provide additional field to add.
@@ -20,7 +22,7 @@ class term_fields_handler_field_date extends views_handler_field {
   }
 
   /**
-   * Provide link to term option
+   * Provide link to term option.
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
@@ -37,8 +39,8 @@ class term_fields_handler_field_date extends views_handler_field {
    * Data should be made XSS safe prior to calling this function.
    */
   function render_link($data, $values) {
-  	$data = term_fields_format_date($data);
-  	
+    $data = term_fields_format_date($data);
+
     if (!empty($this->options['link_to_term']) && $data !== NULL && $data !== '') {
       return l($data, 'taxonomy/term/' . $values->{$this->aliases['tid']}, array('html' => TRUE));
     }

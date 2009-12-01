@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * Handler to display textareas correctly.
@@ -36,7 +37,7 @@ class term_fields_handler_field_textarea extends views_handler_field {
    * Data should be made XSS safe prior to calling this function.
    */
   function render_link($data, $values) {
-  	$data = nl2br($data);
+    $data = nl2br($data);
     if (!empty($this->options['link_to_term']) && $data !== NULL && $data !== '') {
       return l($data, 'taxonomy/term/' . $values->{$this->aliases['tid']}, array('html' => TRUE));
     }

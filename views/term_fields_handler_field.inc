@@ -1,4 +1,5 @@
 <?php
+// $Id$
 
 /**
  * Handler that allows rendering of fields to be links to the term pages. Taken from views_handler_field_node.inc.
@@ -19,7 +20,7 @@ class term_fields_handler_field extends views_handler_field {
   }
 
   /**
-   * Provide link to term option
+   * Provide link to term option.
    */
   function options_form(&$form, &$form_state) {
     parent::options_form($form, $form_state);
