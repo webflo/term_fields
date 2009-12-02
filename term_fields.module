@@ -200,14 +200,16 @@ function term_fields_taxonomy($op, $type, $form_values) {
       // Get all fields used by this vocabulary.
       $fields = term_fields_get_rows($vid);
 
-      // If for some reason we are presented with a $form_values array that does not contain
-      // all the fields for this vocabulary, then we need not be here.
-      foreach ($fields as $field) {
-        if (!isset($form_values[$field->fid])) {
-          return;
+      if ($op != 'delete') {
+        // If for some reason we are presented with a $form_values array that does not contain
+        // all the fields for this vocabulary, then we need not be here.
+        foreach ($fields as $field) {
+          if (!isset($form_values[$field->fid])) {
+            return;
+          }
         }
       }
-
+      
       if (!empty($fields)) {
         // Map field values.
         $values = array();
