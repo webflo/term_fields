@@ -3,8 +3,8 @@
 # LANGUAGE translation of Drupal (general)
 # Copyright YEAR NAME <EMAIL@ADDRESS>
 # Generated from files:
-#  term_fields.admin.inc,v 1.4.2.3 2009/12/01 09:33:35 bprod
-#  term_fields.module,v 1.7.2.6 2009/12/02 08:49:38 bprod
+#  term_fields.admin.inc,v 1.4.2.4 2009/12/09 19:29:04 bprod
+#  term_fields.module,v 1.7.2.7 2009/12/09 19:29:04 bprod
 #  term_fields.views.inc,v 1.4.2.2 2009/12/01 09:33:35 bprod
 #  term_fields.info,v 1.1 2009/01/28 02:41:09 archard
 #  term_fields_handler_field.inc,v 1.1.2.1 2009/12/01 09:33:35 bprod
@@ -16,7 +16,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2009-12-02 21:36+0100\n"
+"POT-Creation-Date: 2009-12-09 23:07+0100\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -69,31 +69,31 @@ msgstr ""
 msgid "Enter a short description of this field to explain what the field is used for."
 msgstr ""
 
-#: term_fields.admin.inc:73
-msgid "Type"
+#: term_fields.admin.inc:73;290
+msgid "Field type"
 msgstr ""
 
-#: term_fields.admin.inc:75
+#: term_fields.admin.inc:75;293
 msgid "Date"
 msgstr ""
 
-#: term_fields.admin.inc:76
+#: term_fields.admin.inc:76;294
 msgid "File"
 msgstr ""
 
-#: term_fields.admin.inc:77
+#: term_fields.admin.inc:77;295
 msgid "Integer"
 msgstr ""
 
-#: term_fields.admin.inc:78
+#: term_fields.admin.inc:78;296
 msgid "Select list"
 msgstr ""
 
-#: term_fields.admin.inc:79
+#: term_fields.admin.inc:79;297
 msgid "Text area (multiple rows)"
 msgstr ""
 
-#: term_fields.admin.inc:80
+#: term_fields.admin.inc:80;298
 msgid "Text field"
 msgstr ""
 
@@ -101,7 +101,7 @@ msgstr ""
 msgid "Define what type of field to use. Single line textboxes should be used for fields such as names and dates, while multi line textareas should be used for longer fields, such as biographies. Cannot be changed later."
 msgstr ""
 
-#: term_fields.admin.inc:87;288
+#: term_fields.admin.inc:87;305
 msgid "Weight"
 msgstr ""
 
@@ -109,7 +109,7 @@ msgstr ""
 msgid "Heavier weighted items get put at the bottom of lists."
 msgstr ""
 
-#: term_fields.admin.inc:93;212;298
+#: term_fields.admin.inc:93;212;315
 msgid "Save"
 msgstr ""
 
@@ -201,27 +201,27 @@ msgstr ""
 msgid "Your PHP settings limit the maximum file size per upload to %size."
 msgstr ""
 
-#: term_fields.admin.inc:290
+#: term_fields.admin.inc:307
 msgid "Fields weighted heavier appear at the bottom of lists."
 msgstr ""
 
-#: term_fields.admin.inc:302;316 term_fields.module:68;157
+#: term_fields.admin.inc:319;333 term_fields.module:68;157
 msgid "Delete"
 msgstr ""
 
-#: term_fields.admin.inc:345
+#: term_fields.admin.inc:362
 msgid "The field %fid has been updated."
 msgstr ""
 
-#: term_fields.admin.inc:359
+#: term_fields.admin.inc:376
 msgid "Are you sure you want to delete the term field %fid?"
 msgstr ""
 
-#: term_fields.admin.inc:361
+#: term_fields.admin.inc:378
 msgid "If you have any content left in this field, it will be lost. This action cannot be undone."
 msgstr ""
 
-#: term_fields.admin.inc:378
+#: term_fields.admin.inc:395
 msgid "The field %fid has been deleted."
 msgstr ""
 
@@ -259,6 +259,14 @@ msgstr ""
 
 #: term_fields.module:554
 msgid "Edit"
+msgstr ""
+
+#: term_fields.module:588
+msgid "@description"
+msgstr ""
+
+#: term_fields.module:589
+msgid "@description - *RAW*"
 msgstr ""
 
 #: term_fields.module:60
