@@ -70,7 +70,7 @@ function term_fields_admin_new() {
     );
     $form['type'] = array(
       '#type' => 'radios',
-      '#title' => t('Type'),
+      '#title' => t('Field type'),
       '#options' => array(
         'date' => t('Date'),
         'file' => t('File'),
@@ -283,6 +283,23 @@ function term_fields_admin_edit($form_state, $fid) {
       '#value' => '<p>'. t('Your PHP settings limit the maximum file size per upload to %size.', array('%size' => format_size(file_upload_max_size()))) . '</p>',
     );
   }
+
+  // Show the disabled data type for usability reasons.
+  $form['type'] = array(
+    '#type' => 'select',
+    '#title' => t('Field type'),
+    '#default_value' => $field->type,
+    '#options' => array(
+      'date' => t('Date'),
+      'file' => t('File'),
+      'numeric' => t('Integer'),
+      'select' => t('Select list'),
+      'textarea' => t('Text area (multiple rows)'),
+      'textfield' => t('Text field'),
+    ),
+    '#disabled' => TRUE,
+  );
+
   $form['weight'] = array(
     '#type' => 'weight',
     '#title' => t('Weight'),

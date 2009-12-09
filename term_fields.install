@@ -83,3 +83,14 @@ function term_fields_schema() {
 
   return $schema;
 }
+
+/**
+ * Remove abandoned entries of deleted taxonomy terms.
+ */
+function term_fields_update_6100() {
+  $ret = array();
+
+  $ret[] = update_sql("DELETE FROM {term_fields_term} WHERE tid NOT IN (SELECT tid FROM {term_data})");
+
+  return $ret;
+}
