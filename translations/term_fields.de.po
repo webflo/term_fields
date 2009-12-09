@@ -15,8 +15,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: German translation of term fields module\n"
-"POT-Creation-Date: 2009-12-09 23:07+0100\n"
-"PO-Revision-Date: 2009-12-10 00:28+0100\n"
+"POT-Creation-Date: 2009-12-10 00:51+0100\n"
+"PO-Revision-Date: 2009-12-10 00:52+0100\n"
 "Last-Translator: Alexander Haß\n"
 "Language-Team: Alexander Hass\n"
 "MIME-Version: 1.0\n"
@@ -213,6 +213,10 @@ msgstr "Felder mit einer höheren Gewichtung, werden am Ende von Listen erschein
 #: term_fields.module:68;157
 msgid "Delete"
 msgstr "Löschen"
+
+#: term_fields.admin.inc:322
+msgid "Edit %fid field"
+msgstr "Feld %fid bearbeiten"
 
 #: term_fields.admin.inc:362
 msgid "The field %fid has been updated."

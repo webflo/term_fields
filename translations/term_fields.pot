@@ -16,7 +16,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: PROJECT VERSION\n"
-"POT-Creation-Date: 2009-12-09 23:07+0100\n"
+"POT-Creation-Date: 2009-12-10 00:51+0100\n"
 "PO-Revision-Date: YYYY-mm-DD HH:MM+ZZZZ\n"
 "Last-Translator: NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <EMAIL@ADDRESS>\n"
@@ -207,6 +207,10 @@ msgstr ""
 
 #: term_fields.admin.inc:319;333 term_fields.module:68;157
 msgid "Delete"
+msgstr ""
+
+#: term_fields.admin.inc:322
+msgid "Edit %fid field"
 msgstr ""
 
 #: term_fields.admin.inc:362
