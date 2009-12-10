@@ -319,7 +319,7 @@ function term_fields_admin_edit($form_state, $fid) {
     '#value' => t('Delete'),
   );
 
-  drupal_set_title(drupal_get_title() . ' ' . $fid);
+  drupal_set_title(t('Edit %fid field', array('%fid' => $fid)));
 
   return $form;
 }

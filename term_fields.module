@@ -73,7 +73,7 @@ function term_fields_form_taxonomy_form_term_alter(&$form, &$form_state) {
     // Make the initial fieldset.
     $form['fields'] = array(
       '#type' => 'fieldset',
-      '#title' => 'Term fields',
+      '#title' => t('Term fields'),
       '#collapsed' => TRUE,
       '#collapsible' => TRUE,
       '#weight' => 1,
