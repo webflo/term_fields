@@ -101,6 +101,13 @@ function term_fields_form_taxonomy_form_term_alter(&$form, &$form_state) {
 
         // Some values are going to be conditional based on the data type.
         switch ($attribute['type']) {
+          case 'checkbox':
+            $form['fields'][$fid] = array(
+              '#type' => $attribute['type'],
+              '#default_value' => $value ? $value : 0,
+              '#description' => $attribute['description'],
+            );
+            break;
           case 'textfield':
             $form['fields'][$fid] = array(
               '#type' => $attribute['type'],

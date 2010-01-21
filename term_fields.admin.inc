@@ -72,6 +72,7 @@ function term_fields_admin_new() {
       '#type' => 'radios',
       '#title' => t('Field type'),
       '#options' => array(
+        'checkbox' => t('Checkbox'),
         'date' => t('Date'),
         'file' => t('File'),
         'numeric' => t('Integer'),
@@ -131,6 +132,9 @@ function term_fields_admin_new_submit($form, &$form_state) {
 
   // Determine which data type to use for the new column.
   switch ($values['type']) {
+    case 'checkbox':
+      $spec = array('type' => 'int', 'size' => 'tiny', 'default' => 0);
+      break;
     case 'textfield':
     case 'textarea':
     case 'select':
@@ -290,6 +294,7 @@ function term_fields_admin_edit($form_state, $fid) {
     '#title' => t('Field type'),
     '#default_value' => $field->type,
     '#options' => array(
+      'checkbox' => t('Checkbox'),
       'date' => t('Date'),
       'file' => t('File'),
       'numeric' => t('Integer'),
