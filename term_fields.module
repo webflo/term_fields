@@ -13,6 +13,11 @@ function term_fields_menu() {
     'type' => MENU_LOCAL_TASK,
     'file' => 'term_fields.admin.inc',
   );
+  $items['admin/content/taxonomy/term_fields/list'] = array(
+    'title' => 'List Fields',
+    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'weight' => -50,
+  );
   $items['admin/content/taxonomy/term_fields/new'] = array(
     'title' => 'Add field',
     'page callback' => 'drupal_get_form',
