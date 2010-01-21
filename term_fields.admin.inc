@@ -257,11 +257,25 @@ function term_fields_admin_edit($form_state, $fid) {
     '#description' => t('You can change the description of this field here.'),
   );
   if ($field->type == 'select') {
+    $default_value = '';
+    if ($field->options && ($options = unserialize($field->options))) {
+      $list = array();
+      foreach ($options as $key => $value) {
+        if ($key == $value) {
+          $list[] = $key;
+        }
+        else {
+          $list[] = "$key|$value";
+        }
+      }
+      $default_value = implode("\n", $list);
+    }
+    
     $form['options'] = array(
       '#type' => 'textarea',
       '#title' => t('Allowed values list'),
       '#description' => t('The possible values this field can contain. Enter one value per line, in the format key|label. The key is the value that will be stored in the database, and it must match the field storage type (text). The label is optional, and the key will be used as the label if no label is specified.'),
-      '#default_value' => $field->options ? implode("\n", unserialize($field->options)) : '',
+      '#default_value' => $default_value,
     );
   }
   elseif ($field->type == 'file') {
@@ -342,11 +356,32 @@ function term_fields_admin_edit_submit($form, &$form_state) {
     $type = db_result(db_query("SELECT type FROM {term_fields} WHERE fid = '%s'", $values['fid']));
     switch ($type) {
       case 'select':
-        $options = explode("\r\n", $values['options']);
-        $options = drupal_map_assoc($options);
-        $options = serialize($options);
+        $options = array();
+        // Code taken from content module
+        $list = explode("\n", $values['options']);
+        $list = array_map('trim', $list);
+        $list = array_filter($list, 'strlen');
+        foreach ($list as $opt) {
+          // Sanitize the user input with a permissive filter.
+          $opt = content_filter_xss($opt);
+          if (strpos($opt, '|') !== FALSE) {
+            list($key, $value) = explode('|', $opt);
+            $options[$key] = (isset($value) && $value !=='') ? $value : $key;
+          }
+          else {
+            $options[$opt] = $opt;
+          }
+        }
+        
+        // Check if there are duplicates
+        if ($diff = array_diff_key($options, array_unique($options))) {
+          $diff = array_unique($diff);
+          $message = format_plural(count($diff), 'The value %values appears several times and may confuse the user.', 'The values %values appear several times and may confuse the user.', array('%values' => implode(', ', $diff)));
+          drupal_set_message($message, 'warning');
+        }
+
         $sql = "UPDATE {term_fields} SET title = '%s', description = '%s', weight = %d, options = '%s' WHERE fid = '%s'";
-        db_query($sql, $values['title'], $values['description'], $values['weight'], $options, $values['fid']);
+        db_query($sql, $values['title'], $values['description'], $values['weight'], serialize($options), $values['fid']);
         break;
 
       case 'file':
