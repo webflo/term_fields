@@ -14,6 +14,12 @@ function term_fields_views_data() {
       'left_field' => 'tid',
       'field' => 'tid'
     );
+    $data['term_fields_term']['table']['join']['node'] = array(
+      'left_table' => 'term_data', // or 'term_node'
+      'left_field' => 'tid',
+      'field' => 'tid',
+    );
+
     foreach ($fields as $fid) {
       $record = db_fetch_object(db_query("SELECT title, type FROM {term_fields} WHERE fid = '%s'", $fid));
 
@@ -109,7 +115,6 @@ function term_fields_views_data() {
       $data['term_fields_term'][$fid]['title'] = t('@title (@fid)', array('@title' => $record->title, '@fid' => $fid));
       $data['term_fields_term'][$fid]['help'] = t('The value of %fid for this particular term.', array('%fid' => $fid));
     }
-
     return $data;
   }
 }
