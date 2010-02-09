@@ -358,12 +358,15 @@ function term_fields_get_field($tid, $fid) {
  * Retrieve an array of fields from a given term, keyed by field ID.
  */
 function term_fields_get_fields($term) {
-  $fids = term_fields_get_fids($term->vid);
-  $field_list = implode(',', $fids);
-  $sql = 'SELECT ' . $field_list .  ' FROM {term_fields_term} WHERE tid = %d';
-  $result = db_query($sql, $term->tid);
+  if ($fids = term_fields_get_fids($term->vid)) {
+    $field_list = implode(',', $fids);
+    $sql = 'SELECT ' . $field_list .  ' FROM {term_fields_term} WHERE tid = %d';
+    $result = db_query($sql, $term->tid);
 
-  return db_fetch_array($result);
+    return db_fetch_array($result);
+  }
+  
+  return NULL;
 }
 
 /**
@@ -391,6 +394,8 @@ function term_fields_views_api() {
  * Get a list of field IDs.
  */
 function term_fields_get_fids($vid = NULL) {
+  $fields = array();
+  
   if ($vid) {
     $result = db_query("SELECT fid FROM {term_fields} WHERE vid = %d", $vid);
   }
