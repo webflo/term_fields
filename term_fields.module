@@ -575,29 +575,114 @@ function term_fields_fetch_fields($result) {
 }
 
 /**
+ * Implementation of hook_nodeapi().
+ */
+function term_fields_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
+  if (in_array($op, array('view', 'prepare', 'print')) && ! empty($node->taxonomy)) {
+    foreach ($node->taxonomy as &$term) {
+      $term->fields = term_fields_get_fields($term);
+    }
+  }
+}
+
+/**
  * Implementation of hook_token_values().
  */
 function term_fields_token_values($type, $object = NULL, $options = array()) {
-  if ($type == 'taxonomy') {
-    $term = $object;
-    $tokens = array();
-    $fields = term_fields_get_rows();
-    foreach ($fields as $fid => $field) {
+  $tokens = $terms = array();
+  
+  // When dealing with node, we have to check if the term fields have
+  // already benn loaded (nodeapi operations: 'view', 'presave', 'print').
+  // If not (operation 'presave'), we have to buils the fields array for
+  // each field.
+  if ($type == 'node' && ! (empty($object->taxonomy))) {
+    $check = reset($object->taxonomy);
+    
+    // Fields have been loaded.
+    if (is_object($check)) {
+      $function = create_function('$term', 'return isset($term->fields) ? $term->fields : array();');
+      $terms = array_map($function, $object->taxonomy);
+    }
+    // Nodeapi presave operation. This case is important, especially if the
+    // Pathauto module is used.
+    else {
+      // Tags
+      if (isset($object->taxonomy['tags'])) {
+        $tags = $object->taxonomy['tags'];
+        unset($object->taxonomy['tags']);
+        
+        foreach ($tags as $vid => $tag) {
+          $names = drupal_explode_tags($tag);
+          
+          foreach ($names as $name) {
+            $tid = NULL;
+            
+            foreach (taxonomy_get_term_by_name($name) as $term) {
+              if ($term->vid == $vid) {
+                $tid = $term->tid;
+              }
+            }
+            
+            if (! isset($terms[$term->tid])) {
+              $terms[$term->tid] = term_fields_get_fields($term);
+            }
+          }
+        }
+      }
+      
+      // Vocabularies
+      foreach ($object->taxonomy as $vid => $term) {
+        if (is_array($term)) {
+          foreach ($term as $tid) {
+            if ($tid && ! isset($terms[$tid])) {
+              $dummy_term = (object) array('tid' => $tid, 'vid' => $vid);
+              $terms[$tid] = term_fields_get_fields($dummy_term);
+            }
+          }
+        }
+        else if (is_object($term)) {
+          if (! isset($terms[$term->tid])) {
+            $terms[$term->tid] = term_fields_get_fields($term);
+          }
+        }
+        else if ($term) {
+          $dummy_term = (object) array('tid' => $term, 'vid' => $vid);
+          $terms[$term] = term_fields_get_fields($dummy_term);
+        }
+      }
+    }
+  }
+  // Taxonomy
+  elseif ($type == 'taxonomy') {
+    $terms[$object->tid] = term_fields_get_fields($object);
+  }
+  
+  if (in_array($type, array('taxonomy', 'node'))) {
+    foreach (term_fields_get_rows() as $fid => $field) {
       if ($field->type != 'textarea' && $field->type != 'date') {
-        $value = term_fields_get_field($term->tid, $fid);
+        $value = '';
+          
+        if ($terms) {
+          $function = create_function('$term', 'return isset($term["'. $field->fid .'"]) ? $term["'. $field->fid .'"] : NULL;');
+          if ($values = array_filter(array_map($function, $terms))) {
+            $value = implode(',', $values);
+          }
+        }
+        
         $tokens['field-' . $fid] = check_plain($value);
         $tokens['field-' . $fid . '-raw'] = $value;
       }
     }
-    return $tokens;
   }
+  
+  return $tokens;
 }
 
 /**
  * Implementation of hook_token_list().
  */
 function term_fields_token_list($type = 'all') {
-  if ($type == 'taxonomy' || $type == 'all') {
+  if ($type == 'taxonomy' || $type == 'node' || $type == 'all') {
     $tokens = array();
     $fields = term_fields_get_rows();
     foreach ($fields as $fid => $field) {
