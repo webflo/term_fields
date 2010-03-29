@@ -180,7 +180,7 @@ function term_fields_form_taxonomy_form_term_alter(&$form, &$form_state) {
         // File fields are strange.
         if ($value && $attribute['type'] == 'file') {
           $file = db_fetch_object(db_query("SELECT * FROM {files} WHERE fid = %d", $value));
-          $form['fields'][$fid]['#description'] .= '<br />' . t('Current file: <a href="@filepath">@filename</a>.', array('@filename' => $file->filename, '@filepath' => $file->filepath));
+          $form['fields'][$fid]['#description'] .= '<br />' . t('Current file: <a href="@filepath">@filename</a>.', array('@filename' => $file->filename, '@filepath' => base_path() . $file->filepath));
         }
 
         // We're going to make some alterations to any date fields that exist.
@@ -579,9 +579,52 @@ function term_fields_fetch_fields($result) {
  */
 function term_fields_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   if (in_array($op, array('view', 'prepare', 'print')) && ! empty($node->taxonomy)) {
-    foreach ($node->taxonomy as &$term) {
-      $term->fields = term_fields_get_fields($term);
+    
+    // When previewing, we can't modify $node->taxonomy, otherwise
+    // it will interfere with taxonomy_link() function, which is supposed
+    // to receive term tids and not term objects.
+    // That's why we use hook_link_alter(), which is called by taxonomy_link()
+    // function in its very end, to recover a normally filled $node->taxonomy
+    // array. So all should work fine if any term field piece of information
+    // is used in a node template file (or in a phptemplate_preprocess_node
+    // function like, which is a better way to interfere with templates).
+    if (isset($node->build_mode) && $node->build_mode == NODE_BUILD_PREVIEW) {
+      
+      // If previewing, the terms must be converted to objects first.
+      $node->taxonomy_preview = taxonomy_preview_terms($node);
+      $taxonomy = &$node->taxonomy_preview;
     }
+    else {
+      $taxonomy = &$node->taxonomy;
+    }
+    
+    foreach ($taxonomy as &$term) {
+      if (is_object($term)) {
+        $term->fields = term_fields_get_fields($term);
+      }
+    }
+    
+    // Clear reference.
+    unset($taxonomy);
+  }
+}
+
+/**
+ * Implementation of hook_link_alter().
+ * 
+ * We use this hook in a non-standard way. Actually it permits to use
+ * the extra information added by term fields module to $node->taxonomy
+ * in preview mode.
+ * We would prefer to do that differently, but it don't seem to be possible
+ * without patching taxonomy module (taxonomy_link() function), which is a
+ * worse method.
+ */
+function term_fields_link_alter(&$links, $node) {
+  if (isset($node->taxonomy_preview)) {
+    // Use array_merge_recursive in case of some other modules deals with
+    // $node->taxonomy.
+    $node->taxonomy = array_merge_recursive($node->taxonomy_preview, $node->taxonomy);
+    unset($node->taxonomy_preview);
   }
 }
 
