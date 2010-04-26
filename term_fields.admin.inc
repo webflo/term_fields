@@ -270,7 +270,7 @@ function term_fields_admin_edit($form_state, $fid) {
       }
       $default_value = implode("\n", $list);
     }
-    
+
     $form['options'] = array(
       '#type' => 'textarea',
       '#title' => t('Allowed values list'),
@@ -372,7 +372,7 @@ function term_fields_admin_edit_submit($form, &$form_state) {
             $options[$opt] = $opt;
           }
         }
-        
+
         // Check if there are duplicates
         if ($diff = array_diff_key($options, array_unique($options))) {
           $diff = array_unique($diff);

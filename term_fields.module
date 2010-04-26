@@ -365,7 +365,7 @@ function term_fields_get_fields($term) {
 
     return db_fetch_array($result);
   }
-  
+
   return NULL;
 }
 
@@ -395,7 +395,7 @@ function term_fields_views_api() {
  */
 function term_fields_get_fids($vid = NULL) {
   $fields = array();
-  
+
   if ($vid) {
     $result = db_query("SELECT fid FROM {term_fields} WHERE vid = %d", $vid);
   }
@@ -579,7 +579,7 @@ function term_fields_fetch_fields($result) {
  */
 function term_fields_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
   if (in_array($op, array('view', 'prepare', 'print')) && ! empty($node->taxonomy)) {
-    
+
     // When previewing, we can't modify $node->taxonomy, otherwise
     // it will interfere with taxonomy_link() function, which is supposed
     // to receive term tids and not term objects.
@@ -589,7 +589,7 @@ function term_fields_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     // is used in a node template file (or in a phptemplate_preprocess_node
     // function like, which is a better way to interfere with templates).
     if (isset($node->build_mode) && $node->build_mode == NODE_BUILD_PREVIEW) {
-      
+
       // If previewing, the terms must be converted to objects first.
       $node->taxonomy_preview = taxonomy_preview_terms($node);
       $taxonomy = &$node->taxonomy_preview;
@@ -597,13 +597,13 @@ function term_fields_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
     else {
       $taxonomy = &$node->taxonomy;
     }
-    
+
     foreach ($taxonomy as &$term) {
       if (is_object($term)) {
         $term->fields = term_fields_get_fields($term);
       }
     }
-    
+
     // Clear reference.
     unset($taxonomy);
   }
@@ -611,7 +611,7 @@ function term_fields_nodeapi(&$node, $op, $teaser = NULL, $page = NULL) {
 
 /**
  * Implementation of hook_link_alter().
- * 
+ *
  * We use this hook in a non-standard way. Actually it permits to use
  * the extra information added by term fields module to $node->taxonomy
  * in preview mode.
@@ -633,14 +633,14 @@ function term_fields_link_alter(&$links, $node) {
  */
 function term_fields_token_values($type, $object = NULL, $options = array()) {
   $tokens = $terms = array();
-  
+
   // When dealing with node, we have to check if the term fields have
   // already benn loaded (nodeapi operations: 'view', 'presave', 'print').
   // If not (operation 'presave'), we have to buils the fields array for
   // each field.
   if ($type == 'node' && ! (empty($object->taxonomy))) {
     $check = reset($object->taxonomy);
-    
+
     // Fields have been loaded.
     if (is_object($check)) {
       $function = create_function('$term', 'return isset($term->fields) ? $term->fields : array();');
@@ -653,26 +653,26 @@ function term_fields_token_values($type, $object = NULL, $options = array()) {
       if (isset($object->taxonomy['tags'])) {
         $tags = $object->taxonomy['tags'];
         unset($object->taxonomy['tags']);
-        
+
         foreach ($tags as $vid => $tag) {
           $names = drupal_explode_tags($tag);
-          
+
           foreach ($names as $name) {
             $tid = NULL;
-            
+
             foreach (taxonomy_get_term_by_name($name) as $term) {
               if ($term->vid == $vid) {
                 $tid = $term->tid;
               }
             }
-            
+
             if (! isset($terms[$term->tid])) {
               $terms[$term->tid] = term_fields_get_fields($term);
             }
           }
         }
       }
-      
+
       // Vocabularies
       foreach ($object->taxonomy as $vid => $term) {
         if (is_array($term)) {
@@ -699,25 +699,25 @@ function term_fields_token_values($type, $object = NULL, $options = array()) {
   elseif ($type == 'taxonomy') {
     $terms[$object->tid] = term_fields_get_fields($object);
   }
-  
+
   if (in_array($type, array('taxonomy', 'node'))) {
     foreach (term_fields_get_rows() as $fid => $field) {
       if ($field->type != 'textarea' && $field->type != 'date') {
         $value = '';
-          
+
         if ($terms) {
           $function = create_function('$term', 'return isset($term["'. $field->fid .'"]) ? $term["'. $field->fid .'"] : NULL;');
           if ($values = array_filter(array_map($function, $terms))) {
             $value = implode(',', $values);
           }
         }
-        
+
         $tokens['field-' . $fid] = check_plain($value);
         $tokens['field-' . $fid . '-raw'] = $value;
       }
     }
   }
-  
+
   return $tokens;
 }
 
