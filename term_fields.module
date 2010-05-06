@@ -85,46 +85,39 @@ function term_fields_form_taxonomy_form_term_alter(&$form, &$form_state) {
     );
 
     // Get all fields for this vocabulary.
-    $result = db_query("SELECT * FROM {term_fields} WHERE vid = %d ORDER BY weight", $vid);
-    $fields = array();
-    while ($data = db_fetch_object($result)) {
-      $fields[$data->fid]['title'] = $data->title;
-      $fields[$data->fid]['description'] = $data->description;
-      $fields[$data->fid]['type'] = $data->type;
-      $fields[$data->fid]['options'] = $data->options;
-    }
+    $fields = term_fields_get_rows($vid);
 
     if (!empty($fields)) {
       // Render the fields.
-      foreach ($fields as $fid => $attribute) {
+      foreach ($fields as $fid => $field) {
         $value = db_result(db_query("SELECT %s FROM {term_fields_term} WHERE tid = %d", $fid, $tid));
 
         // Some values are going to be conditional based on the data type.
-        switch ($attribute['type']) {
+        switch ($field->type) {
           case 'checkbox':
             $form['fields'][$fid] = array(
-              '#type' => $attribute['type'],
+              '#type' => $field->type,
               '#default_value' => $value ? $value : 0,
-              '#description' => $attribute['description'],
+              '#description' => $field->description,
             );
             break;
           case 'textfield':
             $form['fields'][$fid] = array(
-              '#type' => $attribute['type'],
+              '#type' => $field->type,
               '#size' => 30,
               '#max_length' => 100,
               '#default_value' => $value ? $value : NULL,
-              '#description' => $attribute['description'],
+              '#description' => $field->description,
             );
             break;
 
           case 'textarea':
             $form['fields'][$fid] = array(
-              '#type' => $attribute['type'],
+              '#type' => $field->type,
               '#rows' => 5,
               '#cols' => 60,
               '#default_value' => $value ? $value : NULL,
-              '#description' => $attribute['description'],
+              '#description' => $field->description,
             );
             break;
 
@@ -133,28 +126,28 @@ function term_fields_form_taxonomy_form_term_alter(&$form, &$form_state) {
               '#type' => 'textfield',
               '#size' => 2,
               '#default_value' => isset($value) ? $value : NULL,
-              '#description' => $attribute['description'],
+              '#description' => $field->description,
             );
             break;
 
           case 'select':
-            $options = unserialize($attribute['options']);
+            $options = unserialize($field->options);
             $options = array('' => '') + $options;
             $form['fields'][$fid] = array(
               '#type' => 'select',
               '#options' => $options,
               '#default_value' => $value || $value == 0 ? $value : NULL,
-              '#description' => $attribute['description'],
+              '#description' => $field->description,
             );
             break;
 
           case 'date':
             $default_value = date_parse($value);
             $form['fields'][$fid] = array(
-              '#type' => $attribute['type'],
+              '#type' => $field->type,
               '#default_value' => $default_value ? $default_value : NULL,
               '#element_validate' => array('term_fields_date_validate'),
-              '#description' => $attribute['description'],
+              '#description' => $field->description,
             );
             break;
 
@@ -174,11 +167,11 @@ function term_fields_form_taxonomy_form_term_alter(&$form, &$form_state) {
         }
 
         // These fields will always be the same.
-        $form['fields'][$fid]['#title'] = t('@title (@fid)', array('@title' => $attribute['title'], '@fid' => $fid));
-        $form['fields'][$fid]['#description'] = check_plain($attribute['description']);
+        $form['fields'][$fid]['#title'] = t('@title (@fid)', array('@title' => $field->title, '@fid' => $fid));
+        $form['fields'][$fid]['#description'] = check_plain($field->description);
 
         // File fields are strange.
-        if ($value && $attribute['type'] == 'file') {
+        if ($value && $field->type == 'file') {
           $file = db_fetch_object(db_query("SELECT * FROM {files} WHERE fid = %d", $value));
           $form['fields'][$fid]['#description'] .= '<br />' . t('Current file: <a href="@filepath">@filename</a>.', array('@filename' => $file->filename, '@filepath' => base_path() . $file->filepath));
         }
