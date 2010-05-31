@@ -40,7 +40,7 @@ function term_fields_views_data() {
             ),
             'sort' => array(
               'handler' => 'views_handler_sort',
-            )
+            ),
           );
           break;
 
@@ -51,7 +51,7 @@ function term_fields_views_data() {
             ),
             'filter' => array(
               'handler' => 'views_handler_filter_string',
-            )
+            ),
           );
           break;
 
@@ -68,7 +68,7 @@ function term_fields_views_data() {
             ),
             'sort' => array(
               'handler' => 'views_handler_sort',
-            )
+            ),
           );
           break;
 
@@ -85,7 +85,7 @@ function term_fields_views_data() {
             ),
             'sort' => array(
               'handler' => 'views_handler_sort',
-            )
+            ),
           );
           break;
 
@@ -99,7 +99,7 @@ function term_fields_views_data() {
             ),
             'sort' => array(
               'handler' => 'views_handler_sort_date',
-            )
+            ),
           );
           break;
 
@@ -107,7 +107,7 @@ function term_fields_views_data() {
           $data['term_fields_term'][$fid] = array(
             'field' => array(
               'handler' => 'views_handler_field',
-            )
+            ),
             'relationship' => array(
               'handler' => 'views_handler_relationship',
               'base' => 'files',
@@ -145,7 +145,7 @@ function term_fields_views_handlers() {
       ),
       'term_fields_handler_field_date' => array(
         'parent' => 'views_handler_field_date',
-      )
+      ),
     )
   );
 }
