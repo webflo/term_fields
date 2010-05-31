@@ -108,6 +108,12 @@ function term_fields_views_data() {
             'field' => array(
               'handler' => 'views_handler_field',
             )
+            'relationship' => array(
+              'handler' => 'views_handler_relationship',
+              'base' => 'files',
+              'base field' => 'fid',
+              'label' => t('File'),
+            ),
           );
       }
 
