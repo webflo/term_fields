@@ -104,7 +104,7 @@ function term_fields_form_taxonomy_form_term_alter(&$form, &$form_state) {
           case 'textfield':
             $form['fields'][$fid] = array(
               '#type' => $field->type,
-              '#size' => 30,
+              '#size' => 70,
               '#max_length' => 100,
               '#default_value' => $value ? $value : NULL,
               '#description' => $field->description,
