@@ -200,7 +200,7 @@ function term_fields_taxonomy($op, $type, $form_values) {
   $tid = $form_values['tid'];
   $vid = $form_values['vid'];
 
-  switch($type) {
+  switch ($type) {
     case 'term':
       // Get all fields used by this vocabulary.
       $fields = term_fields_get_rows($vid);
@@ -222,7 +222,7 @@ function term_fields_taxonomy($op, $type, $form_values) {
         foreach ($fields as $field) {
           $value = $form_values[$field->fid];
 
-          switch($field->type) {
+          switch ($field->type) {
             case 'date':
               $values[$field->fid] = $value['year'] . '-' . $value['month'] . '-' . $value['day'];
               break;
@@ -676,12 +676,12 @@ function term_fields_token_values($type, $object = NULL, $options = array()) {
             }
           }
         }
-        else if (is_object($term)) {
+        elseif (is_object($term)) {
           if (! isset($terms[$term->tid])) {
             $terms[$term->tid] = term_fields_get_fields($term);
           }
         }
-        else if ($term) {
+        elseif ($term) {
           $dummy_term = (object) array('tid' => $term, 'vid' => $vid);
           $terms[$term] = term_fields_get_fields($dummy_term);
         }
