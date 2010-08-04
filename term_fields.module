@@ -407,10 +407,10 @@ function term_fields_get_fids($vid = NULL) {
  */
 function term_fields_get_rows($vid = NULL) {
   if ($vid && is_numeric($vid)) {
-    $result = db_query("SELECT * FROM {term_fields} WHERE vid = %d", $vid);
+    $result = db_query("SELECT * FROM {term_fields} WHERE vid = %d ORDER BY weight ASC", $vid);
   }
   else {
-    $result = db_query("SELECT * FROM {term_fields}");
+    $result = db_query("SELECT * FROM {term_fields} ORDER BY vid ASC, weight ASC");
   }
 
   $rows = array();
