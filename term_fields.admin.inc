@@ -130,26 +130,7 @@ function term_fields_admin_new_submit($form, &$form_state) {
 
   $values['fid'] = strtolower($values['fid']);
 
-  // Determine which data type to use for the new column.
-  switch ($values['type']) {
-    case 'checkbox':
-      $spec = array('type' => 'int', 'size' => 'tiny', 'default' => 0);
-      break;
-    case 'textfield':
-    case 'textarea':
-    case 'select':
-      $spec = array('type' => 'text', 'size' => 'big');
-      break;
-
-    case 'numeric':
-    case 'file':
-      $spec = array('type' => 'int');
-      break;
-
-    case 'date':
-      $spec = array('type' => 'datetime');
-      break;
-  }
+  $spec = term_fields_get_db_conf($values['type']);
 
   // Success
   drupal_set_message(t('The field %title (%fid) has been created.', array('%title' => $values['title'], '%fid' => $values['fid'])));

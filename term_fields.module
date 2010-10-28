@@ -731,6 +731,38 @@ function term_fields_token_list($type = 'all') {
   }
 }
 
+/**
+ * Function returns db field configuratin
+ *
+ * @param string $type type of term field
+ * @return array
+ *
+ */
+function term_fields_get_db_conf($type) {
+   $result = array();
+  // Determine which data type to use for the new column.
+  switch ($type) {
+    case 'checkbox':
+      $result = array('type' => 'int', 'size' => 'tiny', 'default' => 0);
+      break;
+    case 'textfield':
+    case 'textarea':
+    case 'select':
+      $result = array('type' => 'text', 'size' => 'big');
+      break;
+
+    case 'numeric':
+    case 'file':
+      $result = array('type' => 'int');
+      break;
+
+    case 'date':
+      $result = array('type' => 'datetime');
+      break;
+  }
+  return $result;
+}
+
 function term_fields_get_children($tid, $vid = 0, $key = 'tid') {
   $children = taxonomy_get_children($tid, $vid, $key);
   $result = array();
@@ -738,4 +770,14 @@ function term_fields_get_children($tid, $vid = 0, $key = 'tid') {
     $result[] = term_fields_get_term($child->$key);
   }
   return $result;
+}
+
+/**
+ * Implementation hook_schema_alter()
+ */
+function term_fields_schema_alter(&$schema) {
+  $fields = term_fields_get_rows();
+  foreach ($fields as $field) {
+    $schema['term_fields_term']['fields'][$field->fid] = term_fields_get_db_conf($field->type);
+  }
 }
